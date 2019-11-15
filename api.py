@@ -80,10 +80,12 @@ session_opts = {
     "session.type": "file",
     "session.data_dir": "./data",
     "session.auto": True,
-    "save_accessed_time": True,
-    "secure": True,
-    "timeout": 300,
-    "secret": dict(os.environ)["SECRET"],
+    "session.cookie_expires": True,
+    "session.save_accessed_time": True,
+    "session.secure": True,
+    "session.timeout": 300,
+    "session.secret": dict(os.environ)["SECRET"],
+    "session.httponly": True,
 }
 
 if __name__ == "__main__":

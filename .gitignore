@@ -1,1 +1,5 @@
 *.swp
+*.pem
+*.db
+data/
+__pycache__/
