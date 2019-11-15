@@ -5,6 +5,7 @@ from bottle_tools import fill_args
 from cheroot import wsgi
 from cheroot.ssl.builtin import BuiltinSSLAdapter
 import ssl
+import os
 
 app = Bottle()
 
@@ -63,6 +64,7 @@ session_opts = {
     "save_accessed_time": True,
     "secure": True,
     "timeout": 300,
+    "secret": dict(os.environ)["SECRET"],
 }
 
 if __name__ == "__main__":
