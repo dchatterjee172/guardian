@@ -1,16 +1,29 @@
-from bottle import run, request, ServerAdapter, Bottle
+from bottle import run, request, ServerAdapter, Bottle, abort
 from bottle.ext import sqlite
 from beaker.middleware import SessionMiddleware
-from bottle_tools import fill_args
 from cheroot import wsgi
 from cheroot.ssl.builtin import BuiltinSSLAdapter
 import ssl
 import os
+from database import db_register
+from sqlite3 import IntegrityError
 
 app = Bottle()
 
 
-@app.route("/whoami", method="GET")
+@app.route("/register", method="post")
+def register(db):
+    payload = request.json
+    email = str(payload["email"])
+    password = str(payload["password"])
+    try:
+        db_register(db, email, password)
+        return "registration succesful!"
+    except IntegrityError:
+        return abort(400, "you are doing something fishy!")
+
+
+@app.route("/whoami")
 def whoami():
     try:
         username = current_user()
@@ -20,11 +33,8 @@ def whoami():
 
 
 @app.route("/login", method="POST")
-@fill_args(coerce_types=True)
-def login(name, password):
-    if password == "123":
-        session = beaker_session()
-        session["username"] = name
+def login(db):
+    pass
 
 
 @app.route("/logout", method="POST")
@@ -68,7 +78,14 @@ session_opts = {
 }
 
 if __name__ == "__main__":
-    plugin = sqlite.Plugin(dbfile="./main.db")
+    plugin = sqlite.Plugin(dbfile="main.db")
     app.install(plugin)
     session_app = SessionMiddleware(app, session_opts)
-    run(app=session_app, host="0.0.0.0", port=443, server=SSLCherryPyServer, debug=True)
+    run(
+        app=session_app,
+        host="0.0.0.0",
+        port=443,
+        server=SSLCherryPyServer,
+        debug=True,
+        numthreads=1,
+    )

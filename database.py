@@ -1,4 +1,24 @@
 import sqlite3
+import bcrypt
+
+
+def db_register(db, email, password):
+    hashed = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode("utf-8")
+    db.execute(
+        f"""
+        insert into user
+        (
+        email,
+        password
+        )
+        values
+        (
+        "{email}",
+        "{hashed}"
+        )
+        """
+    )
+
 
 if __name__ == "__main__":
     conn = sqlite3.connect("main.db")
@@ -6,16 +26,17 @@ if __name__ == "__main__":
     c.execute("PRAGMA foreign_keys = ON")
     c.execute(
         """
-        CREATE TABLE user
+        create table user
         (
         id integer primary key autoincrement not null,
-        email text not null unique, password TEXT
+        email text not null unique,
+        password text not null unique
         )
         """
     )
     c.execute(
         """
-        CREATE TABLE activity_options
+        create table activity_options
         (
         id integer primary key autoincrement not null,
         user_id integer not null,
@@ -27,7 +48,7 @@ if __name__ == "__main__":
     )
     c.execute(
         """
-        CREATE TABLE activities
+        create table activities
         (
         duration int not null,
         date datetime not null,
