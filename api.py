@@ -26,10 +26,10 @@ def register(db):
 @app.route("/whoami")
 def whoami():
     try:
-        username = current_user()
+        userid = current_user()
     except Exception:
-        username = None
-    return {"username": username}
+        userid = None
+    return {"userid": userid}
 
 
 @app.route("/login", method="POST")
@@ -49,10 +49,10 @@ def beaker_session():
 
 def current_user():
     session = beaker_session()
-    username = session.get("username", None)
-    if username is None:
+    userid = session.get("userid", None)
+    if userid is None:
         raise Exception("Unauthenticated user")
-    return username
+    return userid
 
 
 class SSLCherryPyServer(ServerAdapter):
