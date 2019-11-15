@@ -1,6 +1,7 @@
 from bottle import run, request, ServerAdapter, Bottle
 from bottle.ext import sqlite
 from beaker.middleware import SessionMiddleware
+from bottle_tools import fill_args
 from cheroot import wsgi
 from cheroot.ssl.builtin import BuiltinSSLAdapter
 import ssl
@@ -18,10 +19,9 @@ def whoami():
 
 
 @app.route("/login", method="POST")
-def login():
-    name = request.forms.UserName
-    passwd = request.forms.Password
-    if passwd == "123":
+@fill_args(coerce_types=True)
+def login(name, password):
+    if password == "123":
         session = beaker_session()
         session["username"] = name
 
