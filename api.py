@@ -5,10 +5,22 @@ from cheroot import wsgi
 from cheroot.ssl.builtin import BuiltinSSLAdapter
 import ssl
 import os
-from database import db_register
+from database import db_register, db_login
 from sqlite3 import IntegrityError
 
 app = Bottle()
+
+
+def beaker_session():
+    return request.environ.get("beaker.session")
+
+
+def current_user():
+    session = beaker_session()
+    userid = session.get("userid", None)
+    if userid is None:
+        raise Exception("Unauthenticated user")
+    return userid
 
 
 @app.route("/register", method="post")
@@ -34,25 +46,22 @@ def whoami():
 
 @app.route("/login", method="POST")
 def login(db):
-    pass
+    payload = request.json
+    email = str(payload["email"])
+    password = str(payload["password"])
+    id_, judgement = db_login(db, email, password)
+    print(id_)
+    if judgement:
+        session = beaker_session()
+        session["userid"] = id_
+    else:
+        abort(400, "get out!")
 
 
 @app.route("/logout", method="POST")
 def logout():
     session = beaker_session()
     session.delete()
-
-
-def beaker_session():
-    return request.environ.get("beaker.session")
-
-
-def current_user():
-    session = beaker_session()
-    userid = session.get("userid", None)
-    if userid is None:
-        raise Exception("Unauthenticated user")
-    return userid
 
 
 class SSLCherryPyServer(ServerAdapter):
@@ -88,4 +97,5 @@ if __name__ == "__main__":
         server=SSLCherryPyServer,
         debug=True,
         numthreads=1,
+        reload=True,
     )

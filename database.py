@@ -20,6 +20,15 @@ def db_register(db, email, password):
     )
 
 
+def db_login(db, email, password):
+    id_, truth = db.execute(
+        f"""
+        select id, password from user where email="{email}"
+        """
+    ).fetchone()
+    return id_, bcrypt.checkpw(password.encode(), truth.encode())
+
+
 if __name__ == "__main__":
     conn = sqlite3.connect("main.db")
     c = conn.cursor()
