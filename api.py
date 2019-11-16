@@ -2,8 +2,6 @@ from bottle import run, request, response, ServerAdapter, Bottle, abort
 from bottle.ext import sqlite
 from beaker.middleware import SessionMiddleware
 from cheroot import wsgi
-from cheroot.ssl.builtin import BuiltinSSLAdapter
-import ssl
 import os
 from database import (
     db_register,
@@ -27,12 +25,9 @@ class Unauthenticated_user(Exception):
     pass
 
 
-class SSLCherryPyServer(ServerAdapter):
+class CherryPyServer(ServerAdapter):
     def run(self, handler):
         server = wsgi.Server((self.host, self.port), handler)
-        server.ssl_adapter = BuiltinSSLAdapter("cacert.pem", "privkey.pem")
-        server.ssl_adapter.context.options |= ssl.OP_NO_TLSv1
-        server.ssl_adapter.context.options |= ssl.OP_NO_TLSv1_1
         try:
             server.start()
         finally:
@@ -169,10 +164,9 @@ if __name__ == "__main__":
     session_app = SessionMiddleware(app, session_opts)
     run(
         app=session_app,
-        host="0.0.0.0",
-        port=443,
-        server=SSLCherryPyServer,
+        host="localhost",
+        port=8080,
+        server=CherryPyServer,
         debug=True,
         numthreads=1,
-        reload=True,
     )
