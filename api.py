@@ -5,10 +5,16 @@ from cheroot import wsgi
 from cheroot.ssl.builtin import BuiltinSSLAdapter
 import ssl
 import os
-from database import db_register, db_login, db_get_activities, db_add_activities
+from database import (
+    db_register,
+    db_login,
+    db_get_activities,
+    db_add_activities,
+    db_add_actions,
+)
 from sqlite3 import IntegrityError
 from inspect import getargspec
-from functools import wraps, partial
+from functools import wraps
 import traceback
 
 app = Bottle()
@@ -116,11 +122,12 @@ def add_activities(db, userid):
     db_add_activities(db, userid, activities)
 
 
-@app.route("/actions", method="POST")
+@app.route("/add_actions", method="POST")
 @login_required
-def actions(db, userid):
+def add_actions(db, userid):
     payload = request.json
-    activities = payload["actions"]
+    actions = payload["actions"]
+    db_add_actions(db, userid, actions)
 
 
 session_opts = {

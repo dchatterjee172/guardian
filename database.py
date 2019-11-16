@@ -58,12 +58,33 @@ def db_add_activities(db, userid, activities):
 
 
 def db_add_actions(db, userid, actions):
-    action_ids = db.execute(
+    cursor = db.cursor()
+    activities_ids = []
+    for activity in actions.keys():
+        print(activity)
+        activities_ids.append(
+            cursor.execute(
+                """
+            select id from activities
+            where activity=? and user_id=?
+            """,
+                (activity, userid),
+            ).fetchone()[0]
+        )
+    db.executemany(
         """
-        select id from activities
-        where activity in ?
+        insert into actions
+        (
+        activity_id,
+        duration
+        )
+        values
+        (?, ?)
         """,
-        actions,
+        (
+            (activities_id, duration)
+            for activities_id, duration in zip(activities_ids, actions.values())
+        ),
     )
 
 
@@ -98,8 +119,8 @@ if __name__ == "__main__":
         create table actions
         (
         duration int not null,
-        date datetime not null,
-        activity_id,
+        timestamp datetime default current_timestamp,
+        activity_id int not null,
         foreign key(activity_id) references
             activities(id)
         )
