@@ -2,22 +2,23 @@
 <html>
     <head>
         <link href="https://cdn.jsdelivr.net/gh/kognise/water.css@latest/dist/dark.min.css" rel="stylesheet"/>
-        <script src="main.js"></script>
+        <script src="main.js">
+        </script>
     </head>
     <body>
-            <fieldset>
-                <legend>
-                    Register
-                </legend>
-                <label for="email">
-                    Email
-                </label>
-                <input id="email" name="email" type="email"/>
-                <label for="password">
-                    Password
-                </label>
-                <input id="password" name="password" type="password"/>
-                <input type="submit" onclick="register()"/>
-            </fieldset>
+        <fieldset>
+            <legend>
+                Register
+            </legend>
+            <label for="email">
+                Email
+            </label>
+            <input id="email" name="email" type="email"/>
+            <label for="password">
+                Password
+            </label>
+            <input id="password" name="password" type="password"/>
+            <input onclick="register()" type="submit"/>
+        </fieldset>
     </body>
 </html>
