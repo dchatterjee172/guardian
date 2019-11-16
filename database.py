@@ -14,8 +14,7 @@ def db_register(db, email, password):
         values
         (?, ?)
         """,
-        (email,),
-        (hashed,),
+        (email, hashed),
     )
 
 
@@ -33,7 +32,7 @@ def db_login(db, email, password):
 def db_get_activities(db, userid):
     activities = db.execute(
         """
-        select activity from activity_options
+        select activity from activities
         where user_id = ?
         """,
         (userid,),
@@ -46,7 +45,7 @@ def db_get_activities(db, userid):
 def db_add_activities(db, userid, activities):
     db.executemany(
         """
-        insert into activity_options
+        insert into activities
         (
         user_id,
         activity
@@ -55,6 +54,16 @@ def db_add_activities(db, userid, activities):
         (?, ?)
         """,
         ((userid, activity) for activity in activities),
+    )
+
+
+def db_add_actions(db, userid, actions):
+    action_ids = db.execute(
+        """
+        select id from activities
+        where activity in ?
+        """,
+        actions,
     )
 
 
@@ -74,7 +83,7 @@ if __name__ == "__main__":
     )
     c.execute(
         """
-        create table activity_options
+        create table activities
         (
         id integer primary key autoincrement not null,
         user_id integer not null,
@@ -86,13 +95,13 @@ if __name__ == "__main__":
     )
     c.execute(
         """
-        create table activities
+        create table actions
         (
         duration int not null,
         date datetime not null,
-        activity_options_id,
-        foreign key(activity_options_id) references
-            activity_options(id)
+        activity_id,
+        foreign key(activity_id) references
+            activities(id)
         )
         """
     )

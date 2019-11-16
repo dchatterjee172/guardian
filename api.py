@@ -116,10 +116,11 @@ def add_activities(db, userid):
     db_add_activities(db, userid, activities)
 
 
-@app.route("/what_have_you_done", method="POST")
+@app.route("/actions", method="POST")
 @login_required
-def what_have_you_done(db, userid):
-    pass
+def actions(db, userid):
+    payload = request.json
+    activities = payload["actions"]
 
 
 session_opts = {
