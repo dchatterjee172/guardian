@@ -7,6 +7,8 @@ import ssl
 import os
 from database import db_register, db_login, db_get_activities, db_add_activities
 from sqlite3 import IntegrityError
+from inspect import getargspec
+from functools import wraps, partial
 import traceback
 
 app = Bottle()
@@ -40,6 +42,27 @@ def current_user():
     return userid
 
 
+def login_required(func):
+    @wraps(func)
+    def checker_db(db):
+        try:
+            userid = current_user()
+            return func(db=db, userid=userid)
+        except Unauthenticated_user:
+            abort(400, "get out!")
+
+    @wraps(func)
+    def checker():
+        try:
+            userid = current_user()
+            return func(userid=userid)
+        except Unauthenticated_user:
+            abort(400, "get out!")
+
+    args = getargspec(func).args
+    return checker_db if "db" in args else checker
+
+
 @app.route("/register", method="post")
 def register(db):
     payload = request.json
@@ -53,11 +76,8 @@ def register(db):
 
 
 @app.route("/whoami")
-def whoami():
-    try:
-        userid = current_user()
-    except Unauthenticated_user:
-        userid = None
+@login_required
+def whoami(userid):
     return {"userid": userid}
 
 
@@ -75,31 +95,31 @@ def login(db):
         abort(400, "get out!")
 
 
-@app.route("/logout", method="POST")
+@app.route("/logout")
 def logout():
     session = beaker_session()
     session.delete()
 
 
 @app.route("/get_activities")
-def get_activities(db):
-    try:
-        userid = current_user()
-    except Unauthenticated_user:
-        abort(400, "get out!")
+@login_required
+def get_activities(db, userid):
     activities = db_get_activities(db, userid)
     return {"activities": activities}
 
 
 @app.route("/add_activities", method="POST")
-def add_activities(db):
-    try:
-        userid = current_user()
-    except Unauthenticated_user:
-        abort(400, "get out!")
+@login_required
+def add_activities(db, userid):
     payload = request.json
     activities = payload["activities"]
     db_add_activities(db, userid, activities)
+
+
+@app.route("/what_have_you_done", method="POST")
+@login_required
+def what_have_you_done(db, userid):
+    pass
 
 
 session_opts = {
