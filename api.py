@@ -67,7 +67,7 @@ def login_required(func):
     return checker_db if "db" in args else checker
 
 
-@app.route("/register", method="post")
+@app.route("/api_register", method="post")
 def register(db):
     payload = request.json
     email = str(payload["email"])
@@ -79,13 +79,13 @@ def register(db):
         return abort(400, "you are doing something fishy!")
 
 
-@app.route("/whoami")
+@app.route("/api_whoami")
 @login_required
 def whoami(userid):
     return {"userid": userid}
 
 
-@app.route("/login", method="POST")
+@app.route("/api_login", method="POST")
 def login(db):
     payload = request.json
     email = str(payload["email"])
@@ -98,20 +98,20 @@ def login(db):
         abort(400, "get out!")
 
 
-@app.route("/logout")
+@app.route("/api_logout")
 def logout():
     session = beaker_session()
     session.delete()
 
 
-@app.route("/get_activities")
+@app.route("/api_get_activities")
 @login_required
 def get_activities(db, userid):
     activities = db_get_activities(db, userid)
     return {"activities": activities}
 
 
-@app.route("/add_activities", method="POST")
+@app.route("/api_add_activities", method="POST")
 @login_required
 def add_activities(db, userid):
     payload = request.json
@@ -119,7 +119,7 @@ def add_activities(db, userid):
     db_add_activities(db, userid, activities)
 
 
-@app.route("/add_actions", method="POST")
+@app.route("/api_add_actions", method="POST")
 @login_required
 def add_actions(db, userid):
     payload = request.json
@@ -127,14 +127,14 @@ def add_actions(db, userid):
     db_add_actions(db, userid, actions)
 
 
-@app.route("/last_action_time")
+@app.route("/api_last_action_time")
 @login_required
 def last_action_time(db, userid):
     time = db_last_action_time(db, userid)
     return {"time": time}
 
 
-@app.route("/get_chart")
+@app.route("/api_get_chart")
 @login_required
 def get_chart(db, userid):
     df = db_get_action_current_day(db, userid)
