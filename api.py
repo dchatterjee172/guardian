@@ -92,11 +92,10 @@ def login(db):
     payload = request.json
     email = str(payload["email"])
     password = str(payload["password"])
-    id_, judgement = db_login(db, email, password)
-    print(id_)
+    userid, judgement = db_login(db, email, password)
     if judgement:
         session = beaker_session()
-        session["userid"] = id_
+        session["userid"] = userid
     else:
         abort(400, "get out!")
 

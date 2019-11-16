@@ -61,7 +61,6 @@ def db_add_actions(db, userid, actions):
     cursor = db.cursor()
     activities_ids = []
     for activity in actions.keys():
-        print(activity)
         activities_ids.append(
             cursor.execute(
                 """
