@@ -1,4 +1,4 @@
-from bottle import run, request, ServerAdapter, Bottle, abort
+from bottle import run, request, response, ServerAdapter, Bottle, abort
 from bottle.ext import sqlite
 from beaker.middleware import SessionMiddleware
 from cheroot import wsgi
@@ -18,6 +18,7 @@ from sqlite3 import IntegrityError
 from inspect import getargspec
 from functools import wraps
 import altair as alt
+from io import StringIO
 
 app = Bottle()
 
@@ -142,8 +143,12 @@ def last_action_time(db, userid):
 @login_required
 def get_chart(db, userid):
     df = db_get_action_current_day(db, userid)
-    print(df)
-    return {"data": df.to_dict()}
+    chart = alt.Chart(df).mark_bar().encode(x="activity", y="duration_minutes")
+    html = StringIO()
+    chart.save(html, "html")
+    html.seek(0)
+    response.content_type = "text/html"
+    return html.read()
 
 
 session_opts = {

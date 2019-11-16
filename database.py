@@ -104,12 +104,13 @@ def db_last_action_time(db, userid):
 
 def db_get_action_current_day(db, userid):
     query = """
-                select activity, duration_minutes
+                select activity, sum(duration_minutes) as duration_minutes
                 from actions inner join activities
                 where
                 activities.user_id = ?
                 and
-                date(timestamp) == date('now');
+                date(timestamp) == date('now')
+                group by activity;
             """
     df = pd.read_sql_query(query, db, params=(userid,))
     return df
