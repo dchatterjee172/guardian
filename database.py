@@ -1,5 +1,6 @@
 import sqlite3
 import bcrypt
+import pandas as pd
 
 
 def db_register(db, email, password):
@@ -75,14 +76,14 @@ def db_add_actions(db, userid, actions):
         insert into actions
         (
         activity_id,
-        duration
+        duration_minutes
         )
         values
         (?, ?)
         """,
         (
-            (activities_id, duration)
-            for activities_id, duration in zip(activities_ids, actions.values())
+            (activities_id, duration_minutes)
+            for activities_id, duration_minutes in zip(activities_ids, actions.values())
         ),
     )
 
@@ -99,6 +100,19 @@ def db_last_action_time(db, userid):
         (userid,),
     ).fetchone()[0]
     return time
+
+
+def db_get_action_current_day(db, userid):
+    query = """
+                select activity, duration_minutes
+                from actions inner join activities
+                where
+                activities.user_id = ?
+                and
+                date(timestamp) == date('now');
+            """
+    df = pd.read_sql_query(query, db, params=(userid,))
+    return df
 
 
 if __name__ == "__main__":
@@ -131,7 +145,7 @@ if __name__ == "__main__":
         """
         create table actions
         (
-        duration int not null,
+        duration_minutes int not null,
         timestamp datetime default current_timestamp,
         activity_id int not null,
         foreign key(activity_id) references

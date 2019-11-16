@@ -12,10 +12,12 @@ from database import (
     db_add_activities,
     db_add_actions,
     db_last_action_time,
+    db_get_action_current_day,
 )
 from sqlite3 import IntegrityError
 from inspect import getargspec
 from functools import wraps
+import altair as alt
 
 app = Bottle()
 
@@ -134,6 +136,14 @@ def add_actions(db, userid):
 def last_action_time(db, userid):
     time = db_last_action_time(db, userid)
     return {"time": time}
+
+
+@app.route("/get_chart")
+@login_required
+def get_chart(db, userid):
+    df = db_get_action_current_day(db, userid)
+    print(df)
+    return {"data": df.to_dict()}
 
 
 session_opts = {
