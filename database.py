@@ -138,7 +138,8 @@ if __name__ == "__main__":
         user_id integer not null,
         activity text not null,
         foreign key (user_id) references user(id),
-        constraint unq unique (user_id, activity)
+        constraint unq unique (user_id, activity),
+        check(length(activity) < 100)
         )
         """
     )
@@ -150,7 +151,8 @@ if __name__ == "__main__":
         timestamp datetime default current_timestamp,
         activity_id int not null,
         foreign key(activity_id) references
-            activities(id)
+            activities(id),
+        check(duration_minutes > 0)
         )
         """
     )
