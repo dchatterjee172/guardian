@@ -5,10 +5,27 @@ from cheroot import wsgi
 from cheroot.ssl.builtin import BuiltinSSLAdapter
 import ssl
 import os
-from database import db_register, db_login
+from database import db_register, db_login, db_get_activities, db_add_activities
 from sqlite3 import IntegrityError
+import traceback
 
 app = Bottle()
+
+
+class Unauthenticated_user(Exception):
+    pass
+
+
+class SSLCherryPyServer(ServerAdapter):
+    def run(self, handler):
+        server = wsgi.Server((self.host, self.port), handler)
+        server.ssl_adapter = BuiltinSSLAdapter("cacert.pem", "privkey.pem")
+        server.ssl_adapter.context.options |= ssl.OP_NO_TLSv1
+        server.ssl_adapter.context.options |= ssl.OP_NO_TLSv1_1
+        try:
+            server.start()
+        finally:
+            server.stop()
 
 
 def beaker_session():
@@ -19,7 +36,7 @@ def current_user():
     session = beaker_session()
     userid = session.get("userid", None)
     if userid is None:
-        raise Exception("Unauthenticated user")
+        raise Unauthenticated_user("Unauthenticated user")
     return userid
 
 
@@ -39,7 +56,7 @@ def register(db):
 def whoami():
     try:
         userid = current_user()
-    except Exception:
+    except Unauthenticated_user:
         userid = None
     return {"userid": userid}
 
@@ -64,16 +81,25 @@ def logout():
     session.delete()
 
 
-class SSLCherryPyServer(ServerAdapter):
-    def run(self, handler):
-        server = wsgi.Server((self.host, self.port), handler)
-        server.ssl_adapter = BuiltinSSLAdapter("cacert.pem", "privkey.pem")
-        server.ssl_adapter.context.options |= ssl.OP_NO_TLSv1
-        server.ssl_adapter.context.options |= ssl.OP_NO_TLSv1_1
-        try:
-            server.start()
-        finally:
-            server.stop()
+@app.route("/get_activities")
+def get_activities(db):
+    try:
+        userid = current_user()
+    except Unauthenticated_user:
+        abort(400, "get out!")
+    activities = db_get_activities(db, userid)
+    return {"activities": activities}
+
+
+@app.route("/add_activities", method="POST")
+def add_activities(db):
+    try:
+        userid = current_user()
+    except Unauthenticated_user:
+        abort(400, "get out!")
+    payload = request.json
+    activities = payload["activities"]
+    db_add_activities(db, userid, activities)
 
 
 session_opts = {

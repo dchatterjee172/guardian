@@ -5,28 +5,57 @@ import bcrypt
 def db_register(db, email, password):
     hashed = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode("utf-8")
     db.execute(
-        f"""
+        """
         insert into user
         (
         email,
         password
         )
         values
-        (
-        "{email}",
-        "{hashed}"
-        )
-        """
+        (?, ?)
+        """,
+        (email,),
+        (hashed,),
     )
 
 
 def db_login(db, email, password):
-    id_, truth = db.execute(
-        f"""
-        select id, password from user where email="{email}"
+    userid, truth = db.execute(
         """
+        select id, password from user
+        where email = ?
+        """,
+        (email,),
     ).fetchone()
-    return id_, bcrypt.checkpw(password.encode(), truth.encode())
+    return userid, bcrypt.checkpw(password.encode(), truth.encode())
+
+
+def db_get_activities(db, userid):
+    activities = db.execute(
+        """
+        select activity from activity_options
+        where user_id = ?
+        """,
+        (userid,),
+    ).fetchall()
+    for i in range(len(activities)):
+        activities[i] = activities[i][0]
+    return activities
+
+
+def db_add_activities(db, userid, activities):
+    db.executemany(
+        """
+        insert into activity_options
+        (
+        user_id,
+        activity
+        )
+        values
+        (?, ?)
+        """,
+        ((userid, activity) for activity in activities),
+    )
 
 
 if __name__ == "__main__":
