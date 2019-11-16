@@ -88,6 +88,20 @@ def db_add_actions(db, userid, actions):
     )
 
 
+def db_last_action_time(db, userid):
+    time = db.execute(
+        """
+        select timestamp
+        from actions inner join activities
+        where activities.user_id = ?
+        order by timestamp desc
+        limit 1
+        """,
+        (userid,),
+    ).fetchone()[0]
+    return time
+
+
 if __name__ == "__main__":
     conn = sqlite3.connect("main.db")
     c = conn.cursor()

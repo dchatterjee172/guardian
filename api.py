@@ -11,11 +11,11 @@ from database import (
     db_get_activities,
     db_add_activities,
     db_add_actions,
+    db_last_action_time,
 )
 from sqlite3 import IntegrityError
 from inspect import getargspec
 from functools import wraps
-import traceback
 
 app = Bottle()
 
@@ -128,6 +128,13 @@ def add_actions(db, userid):
     payload = request.json
     actions = payload["actions"]
     db_add_actions(db, userid, actions)
+
+
+@app.route("/last_action_time")
+@login_required
+def last_action_time(db, userid):
+    time = db_last_action_time(db, userid)
+    return {"time": time}
 
 
 session_opts = {
