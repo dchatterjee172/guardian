@@ -1,5 +1,6 @@
 var api = "https://localhost:8080/"
 var activities = null
+var selected_activities = new Set()
 var available_time = null
 var used_time = 0
 
@@ -70,18 +71,43 @@ function login() {
 }
 
 function set_activities(new_activities) {
-    activities = new_activities["activities"];
-    var options = '<option value="" selected disabled hidden>activities</option>';
-    for (var i = 0; i < activities.length; i++) {
-        console.log(activities[i])
-        activity = activities[i];
-        options = options + `<option value="${activity}">${activity}</option>`;
+    activities = new Set(new_activities["activities"]);
+}
+
+
+function set_activities_options(i) {
+    select = document.getElementById(`action_${i}`);
+    selected_option = select.options[select.selectedIndex].value
+    let difference = [...activities].filter(x => !selected_activities.has(x));
+    difference.sort();
+    let options = '';
+    for (let activity of difference) {
+        if (activity === selected_option) {
+            options = options + `<option selected value="${activity}">${activity}</option>`;
+        } else {
+
+            options = options + `<option value="${activity}">${activity}</option>`;
+        }
     }
-    selects = document.getElementsByTagName("select");
-    console.log(selects)
-    for (var i = 0; i < selects.length; i++) {
-        console.log(selects[i])
-        selects[i].innerHTML = options;
+    if (options.length === 0) {
+        options = options + '<option value="" selected disabled hidden>activities</option>';
+    }
+    document.getElementById(`action_${i}`).innerHTML = options
+}
+
+function check_used_activities() {
+    var new_selected_activities = new(Set)
+    let selects = document.getElementsByTagName("select")
+    for (select of selects) {
+        option = select.options[select.selectedIndex].value
+        if (option !== "activities") {
+            select.disabled = true
+        }
+        new_selected_activities.add(select.options[select.selectedIndex].value);
+    }
+    selected_activities = new_selected_activities;
+    if (selected_activities.size === activities.size) {
+        document.getElementById("add_action").disabled = true;
     }
 }
 
@@ -98,6 +124,7 @@ function set_available_time(new_available_time) {
 function set_used_time() {
     document.getElementById("time_used").innerHTML = `Added actions worth ${used_time} minutes`
 }
+
 function get_available_time() {
     var url = api + "api_last_action_time";
     get_json(url, set_available_time);
@@ -122,7 +149,7 @@ function remove_activity(i) {
 function add_action() {
     var field = document.getElementById("action_field");
     var count = field.childElementCount / 3;
-    field.insertAdjacentHTML('beforeend', `<select id="action_${count + 1}" required ><option value="" selected disabled hidden>activities</option></select><input id="action_value_${count + 1}" min="1" type="number"/><button id="action_remove_${count + 1}" type="button" onclick="remove_action(${count + 1})">remove the above action</button>`);
+    field.insertAdjacentHTML('beforeend', `<select id="action_${count + 1}" onfocus="set_activities_options(${count + 1})" onblur="check_used_activities()"><option value="" selected disabled hidden>activities</option></select><input id="action_value_${count + 1}" min="1" type="number"/><button id="action_remove_${count + 1}" type="button" onclick="remove_action(${count + 1})">remove the above action</button>`);
     get_activities()
 }
 
@@ -130,7 +157,7 @@ function add_activity() {
     var field = document.getElementById("activity_field");
     var count = field.childElementCount / 2;
     field.insertAdjacentHTML('beforeend', `<input id="activity_value_${count + 1}" type="text"/><button id="activity_remove_${count + 1}" type="button" onclick="remove_activity(${count + 1})">remove the above activity</button>`);
-    
+
 }
 
 function set_chart(chart) {
@@ -155,6 +182,7 @@ function get_chart() {
 }
 
 function body() {
+    get_activities();
     get_available_time();
     set_used_time();
     add_action();
