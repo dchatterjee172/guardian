@@ -5,7 +5,6 @@ var available_time = null
 var used_time = 0
 
 function post_json(url, data, callback, do_async = true) {
-    console.log(data)
     var xhr = new XMLHttpRequest();
     xhr.open("POST", url, do_async);
     xhr.setRequestHeader("Content-Type", "application/json");
@@ -92,7 +91,7 @@ function set_activities_options(i) {
     if (options.length === 0) {
         options = options + '<option value="" selected disabled hidden>activities</option>';
     }
-    document.getElementById(`action_${i}`).innerHTML = options
+    select.innerHTML = options
 }
 
 function check_used_activities() {
@@ -106,8 +105,8 @@ function check_used_activities() {
         new_selected_activities.add(select.options[select.selectedIndex].value);
     }
     selected_activities = new_selected_activities;
-    if (selected_activities.size === activities.size) {
-        document.getElementById("add_action").disabled = true;
+    if (selected_activities.size !== activities.size) {
+        document.getElementById("add_action").disabled = false;
     }
 }
 
@@ -132,6 +131,8 @@ function get_available_time() {
 
 function remove_action(i) {
     var elem = document.getElementById(`action_${i}`);
+    selected_activities.delete(elem.options[elem.selectedIndex].value);
+    document.getElementById("add_action").disabled = false;
     elem.parentNode.removeChild(elem);
     elem = document.getElementById(`action_remove_${i}`);
     elem.parentNode.removeChild(elem);
@@ -148,15 +149,16 @@ function remove_activity(i) {
 
 function add_action() {
     var field = document.getElementById("action_field");
-    var count = field.childElementCount / 3;
-    field.insertAdjacentHTML('beforeend', `<select id="action_${count + 1}" onfocus="set_activities_options(${count + 1})" onblur="check_used_activities()"><option value="" selected disabled hidden>activities</option></select><input id="action_value_${count + 1}" min="1" type="number"/><button id="action_remove_${count + 1}" type="button" onclick="remove_action(${count + 1})">remove the above action</button>`);
+    var id = Date.now();
+    field.insertAdjacentHTML('beforeend', `<select id="action_${id}" onfocus="set_activities_options(${id})" onblur="check_used_activities()"><option value="" selected disabled hidden>activities</option></select><input id="action_value_${id}" min="1" type="number"/><button id="action_remove_${id}" type="button" onclick="remove_action(${id})">remove the above action</button>`);
     get_activities()
+    document.getElementById("add_action").disabled = true;
 }
 
 function add_activity() {
     var field = document.getElementById("activity_field");
-    var count = field.childElementCount / 2;
-    field.insertAdjacentHTML('beforeend', `<input id="activity_value_${count + 1}" type="text"/><button id="activity_remove_${count + 1}" type="button" onclick="remove_activity(${count + 1})">remove the above activity</button>`);
+    var id = Date.now();
+    field.insertAdjacentHTML('beforeend', `<input id="activity_value_${id}" type="text"/><button id="activity_remove_${id}" type="button" onclick="remove_activity(${id})">remove the above activity</button>`);
 
 }
 
