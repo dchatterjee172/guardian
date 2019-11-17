@@ -92,11 +92,12 @@ function set_activities_options(i) {
         options = options + '<option value="" selected disabled hidden>activities</option>';
     }
     select.innerHTML = options
+    document.getElementById(`action_value_${i}`).disabled = false;
 }
 
 function check_used_activities() {
     var new_selected_activities = new(Set)
-    let selects = document.getElementsByTagName("select")
+    let selects = document.getElementsByClassName("action_select")
     for (select of selects) {
         option = select.options[select.selectedIndex].value
         if (option !== "activities") {
@@ -118,10 +119,24 @@ function get_activities() {
 function set_available_time(new_available_time) {
     available_time = new_available_time["minutes_ago"];
     document.getElementById("time_available").innerHTML = `What have you done in past ${available_time} minutes?`
+    set_used_time();
 }
 
 function set_used_time() {
-    document.getElementById("time_used").innerHTML = `Added actions worth ${used_time} minutes`
+    let times = document.getElementsByClassName("time_select")
+    var new_used_time = 0
+    for (x of times) {
+        if (x.value !== "") {
+            new_used_time += parseInt(x.value)
+        }
+    }
+    used_time = new_used_time
+    document.getElementById("time_used").innerHTML = `Added actions worth ${used_time} minutes! Remaining ${available_time - used_time} minutes.`
+}
+
+function set_max_time(i) {
+    let time = document.getElementById(`action_value_${i}`);
+    time.setAttribute("max", `${available_time - used_time}`);
 }
 
 function get_available_time() {
@@ -138,6 +153,7 @@ function remove_action(i) {
     elem.parentNode.removeChild(elem);
     elem = document.getElementById(`action_value_${i}`);
     elem.parentNode.removeChild(elem);
+    set_used_time();
 }
 
 function remove_activity(i) {
@@ -150,7 +166,7 @@ function remove_activity(i) {
 function add_action() {
     var field = document.getElementById("action_field");
     var id = Date.now();
-    field.insertAdjacentHTML('beforeend', `<select id="action_${id}" onfocus="set_activities_options(${id})" onblur="check_used_activities()"><option value="" selected disabled hidden>activities</option></select><input id="action_value_${id}" min="1" type="number"/><button id="action_remove_${id}" type="button" onclick="remove_action(${id})">remove the above action</button>`);
+    field.insertAdjacentHTML('beforeend', `<select id="action_${id}" class="action_select" onfocus="set_activities_options(${id})" onblur="check_used_activities()"><option value="" selected disabled hidden>activities</option></select><input id="action_value_${id}" min="1" type="number" class="time_select" onchange="set_used_time()" onfocus="set_max_time(${id})" disabled onkeydown="return false"/><button id="action_remove_${id}" type="button" onclick="remove_action(${id})">remove the above action</button>`);
     get_activities()
     document.getElementById("add_action").disabled = true;
 }
@@ -186,7 +202,6 @@ function get_chart() {
 function body() {
     get_activities();
     get_available_time();
-    set_used_time();
     add_action();
     add_activity();
 }
