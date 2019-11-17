@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link href="https://cdn.jsdelivr.net/gh/kognise/water.css@latest/dist/dark.min.css" rel="stylesheet"/>
+        <script src="main.js">
+        </script>
+        <style>
+            .vega-actions a {
+												margin-right: 12px;
+												color: #757575;
+												font-weight: normal;
+												font-size: 13px;
+								}
+
+		
+		
+		
+		.error {
+												color: red;
+								}
+        </style>
+        <script src="https://cdn.jsdelivr.net/npm//vega@5" type="text/javascript">
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm//vega-lite@3.4.0" type="text/javascript">
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm//vega-embed@4" type="text/javascript">
+        </script>
+    </head>
+    <body onload="body()">
+        <fieldset>
+            <legend>
+                Enter Action
+            </legend>
+            <fieldset id="action_field">
+            </fieldset>
+            <br/>
+            <button onclick="add_action()" type="button">
+                Add another action
+            </button>
+            <input type="submit"/>
+        </fieldset>
+        <br/>
+        <fieldset>
+            <legend>
+                Add New Activity
+            </legend>
+            <fieldset id="activity_field">
+            </fieldset>
+            <br/>
+            <button onclick="add_activity()" type="button">
+                Add another avtivity
+            </button>
+            <input type="submit"/>
+        </fieldset>
+        <br/>
+        <fieldset>
+            <legend>
+                Fancy Stuff!
+            </legend>
+            <fieldset><div id="vis", style="background:#4BA279"></div></fieldset>
+            <button onclick="get_chart()" type="button">
+                Fetch chart of the day!
+            </button>
+        </fieldset>
+    </body>
+</html>
