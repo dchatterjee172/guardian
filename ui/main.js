@@ -15,6 +15,9 @@ function post_json(url, data, callback, do_async = true) {
                     callback(response)
                 }
             }
+            else if (xhr.status == 401){
+                window.location.href = "/login.html"
+            }
         }
     };
     xhr.send(JSON.stringify(data));
@@ -31,11 +34,21 @@ function get_json(url, callback, do_async = true) {
                     callback(response)
                 }
             }
+            else if (xhr.status == 401){
+                window.location.href = "/login.html"
+            }
         }
     };
     xhr.send();
 }
 
+function go_home(){
+    window.location.href = "/index.html"
+}
+
+function go_login(){
+    window.location.href = "/login.html"
+}
 function register() {
     var email = document.getElementById("email").value;
     var password = document.getElementById("password").value;
@@ -43,7 +56,7 @@ function register() {
     post_json(url, {
         "email": email,
         "password": password
-    })
+    }, go_login)
 }
 
 function login() {
@@ -53,7 +66,7 @@ function login() {
     post_json(url, {
         "email": email,
         "password": password
-    });
+    }, go_home);
 }
 
 function set_activities(new_activities) {
@@ -102,11 +115,11 @@ function add_activity() {
     field.innerHTML = field.innerHTML + `<input id="activity_value_${count + 1}" type="text"/><button id="activity_remove_${count + 1}" type="button" onclick="remove_activity(${count + 1})">remove the above activity</button>`;
 }
 
-function set_chart(chart){
-        eval(chart)
+function set_chart(chart) {
+    eval(chart)
 }
 
-function get_chart(){
+function get_chart() {
     var xhr = new XMLHttpRequest();
     var url = api + "api_get_chart";
     xhr.open("GET", url, true);
@@ -115,6 +128,9 @@ function get_chart(){
             if (xhr.status === 200) {
                 var response = xhr.responseText
                 set_chart(response)
+            }
+            else if (xhr.status == 401){
+                window.location.href = "/login.html"
             }
         }
     };

@@ -58,7 +58,7 @@ def login_required(func):
             userid = current_user()
             return func(db=db, userid=userid)
         except Unauthenticated_user:
-            abort(400, "get out!")
+            abort(401, "get out!")
 
     @wraps(func)
     def checker():
@@ -66,7 +66,7 @@ def login_required(func):
             userid = current_user()
             return func(userid=userid)
         except Unauthenticated_user:
-            abort(400, "get out!")
+            abort(401, "get out!")
 
     args = getargspec(func).args
     return checker_db if "db" in args else checker
@@ -79,7 +79,7 @@ def register(db):
     password = str(payload["password"])
     try:
         db_register(db, email, password)
-        return "registration succesful!"
+        return {"success": True}
     except IntegrityError:
         return abort(400, "you are doing something fishy!")
 
@@ -99,6 +99,7 @@ def login(db):
     if judgement:
         session = beaker_session()
         session["userid"] = userid
+        return {"success": True}
     else:
         abort(400, "get out!")
 
