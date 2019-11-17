@@ -17,8 +17,12 @@ from inspect import getargspec
 from functools import wraps
 import altair as alt
 from io import StringIO
+from datetime import datetime
+from dateutil import parser
+import pytz
 
 app = Bottle()
+using_timezone = pytz.timezone("Asia/Calcutta")
 
 
 class Unauthenticated_user(Exception):
@@ -130,8 +134,17 @@ def add_actions(db, userid):
 @app.route("/api_last_action_time")
 @login_required
 def last_action_time(db, userid):
-    time = db_last_action_time(db, userid)
-    return {"time": time}
+    timestamp_str = db_last_action_time(db, userid)
+    now = datetime.now(pytz.timezone("GMT"))
+    if timestamp_str is None:
+        now = now.astimezone(using_timezone)
+        delta = now - now.replace(hour=0, minute=0, second=0, microsecond=0)
+    else:
+        timestamp = parser.parse(timestamp_str, default=now)
+        now = now.astimezone(using_timezone)
+        delta = now - timestamp.astimezone(using_timezone)
+    delta = delta.total_seconds() // 60
+    return {"minutes_ago": int(delta)}
 
 
 @app.route("/api_get_chart")

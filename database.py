@@ -98,7 +98,11 @@ def db_last_action_time(db, userid):
         limit 1
         """,
         (userid,),
-    ).fetchone()[0]
+    ).fetchone()
+    if time is None:
+        pass
+    else:
+        time = time[0]
     return time
 
 
