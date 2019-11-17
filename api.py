@@ -20,6 +20,7 @@ from io import StringIO
 from datetime import datetime
 from dateutil import parser
 import pytz
+from bs4 import BeautifulSoup
 
 app = Bottle()
 using_timezone = pytz.timezone("Asia/Calcutta")
@@ -155,8 +156,12 @@ def get_chart(db, userid):
     html = StringIO()
     chart.save(html, "html")
     html.seek(0)
-    response.content_type = "text/html"
-    return html.read()
+    html = html.read()
+    html = BeautifulSoup(html)
+    body = html.body
+    script = body.find("script")
+    response.content_type = "text/plain"
+    return script.contents[0]
 
 
 session_opts = {
