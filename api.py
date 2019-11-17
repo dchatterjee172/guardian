@@ -114,7 +114,7 @@ def logout():
 @login_required
 def get_activities(db, userid):
     activities = db_get_activities(db, userid)
-    return {"activities": activities}
+    return {"activities": sorted(activities)}
 
 
 @app.route("/api_add_activities", method="POST")
@@ -172,7 +172,7 @@ session_opts = {
     "session.cookie_expires": True,
     "session.save_accessed_time": True,
     "session.secure": True,
-    "session.timeout": 300,
+    "session.timeout": 3000,
     "session.secret": dict(os.environ)["SECRET"],
     "session.httponly": True,
 }
