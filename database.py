@@ -93,6 +93,7 @@ def db_last_action_time(db, userid):
         """
         select timestamp
         from actions inner join activities
+        on actions.activity_id = activities.id
         where activities.user_id = ?
         order by timestamp desc
         limit 1
@@ -110,6 +111,7 @@ def db_get_action_current_day(db, userid):
     query = """
                 select activity, sum(duration_minutes) as duration_minutes
                 from actions inner join activities
+                on actions.activity_id = activities.id
                 where
                 activities.user_id = ?
                 and
