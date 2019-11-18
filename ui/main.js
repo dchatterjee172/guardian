@@ -136,7 +136,12 @@ function set_used_time() {
 
 function set_max_time(i) {
     let time = document.getElementById(`action_value_${i}`);
-    time.setAttribute("max", `${available_time - used_time}`);
+    let current_value = parseInt(time.value)
+    if (isNaN(current_value)) {
+        current_value = 0
+    }
+    console.log(current_value)
+    time.setAttribute("max", `${available_time - used_time - current_value}`);
 }
 
 function get_available_time() {
@@ -171,10 +176,54 @@ function add_action() {
     document.getElementById("add_action").disabled = true;
 }
 
+function send_actions() {
+    if (available_time - used_time > 0) {
+        alert("make sure remaining minutes is 0");
+        return
+    }
+    selects = document.getElementsByClassName("action_select");
+    times = document.getElementsByClassName("time_select");
+    payload = {}
+    for (let i = 0; i < selects.length; i++) {
+        payload[selects[i].options[selects[i].selectedIndex].value] = parseInt(times[i].value);
+    }
+    let url = "api_add_actions";
+    post_json(url, {
+        "actions": payload
+    }, (function x(x) {
+        var field = document.getElementById("action_field");
+        var id = Date.now();
+        field.innerHTML = `<select id="action_${id}" class="action_select" onfocus="set_activities_options(${id})" onblur="check_used_activities()"><option value="" selected disabled hidden>activities</option></select><input id="action_value_${id}" min="1" type="number" class="time_select" onchange="set_used_time()" onfocus="set_max_time(${id})" disabled onkeydown="return false"/><button id="action_remove_${id}" type="button" onclick="remove_action(${id})">remove the above action</button>`
+        get_activities()
+        document.getElementById("add_action").disabled = true;
+        get_available_time();
+    }));
+}
+
+function send_activities() {
+    activities = document.getElementsByClassName("activity_select");
+    payload = Array()
+    for (activity of activities) {
+        console.log(payload)
+        activity.value = activity.value.trim()
+        if (activity.value.length > 0) {
+            payload.push(activity.value);
+        }
+    }
+    let url = "api_add_activities";
+    post_json(url, {
+        "activities": payload
+    }, (function x(x) {
+        var field = document.getElementById("activity_field");
+        var id = Date.now();
+        field.innerHTML = `<input id="activity_value_${id}" type="text" class="activity_select"/><button id="activity_remove_${id}" type="button" onclick="remove_activity(${id})">remove the above activity</button>`
+    }));
+}
+
 function add_activity() {
     var field = document.getElementById("activity_field");
     var id = Date.now();
-    field.insertAdjacentHTML('beforeend', `<input id="activity_value_${id}" type="text"/><button id="activity_remove_${id}" type="button" onclick="remove_activity(${id})">remove the above activity</button>`);
+    field.insertAdjacentHTML('beforeend', `<input id="activity_value_${id}" type="text" class="activity_select"/><button id="activity_remove_${id}" type="button" onclick="remove_activity(${id})">remove the above activity</button>`);
 
 }
 
