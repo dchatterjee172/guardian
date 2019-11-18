@@ -44,6 +44,16 @@ def db_get_activities(db, userid):
 
 
 def db_add_activities(db, userid, activities):
+    counts = db.execute(
+        """
+        select count(activity)
+        from activities
+        where user_id = ?
+        """,
+        (userid,),
+    ).fetchone()[0]
+    if counts + len(activities) > 100:
+        raise sqlite3.IntegrityError("too many activities!")
     db.executemany(
         """
         insert into activities
