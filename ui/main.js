@@ -141,7 +141,7 @@ function set_max_time(i) {
         current_value = 0
     }
     console.log(current_value)
-    time.setAttribute("max", `${available_time - used_time - current_value}`);
+    time.setAttribute("max", `${available_time - used_time + current_value}`);
 }
 
 function get_available_time() {
