@@ -123,6 +123,7 @@ def add_activities(db, userid):
     payload = request.json
     activities = payload["activities"]
     db_add_activities(db, userid, activities)
+    return {"success": True}
 
 
 @app.route("/api_add_actions", method="POST")
@@ -131,6 +132,7 @@ def add_actions(db, userid):
     payload = request.json
     actions = payload["actions"]
     db_add_actions(db, userid, actions)
+    return {"success": True}
 
 
 @app.route("/api_last_action_time")
