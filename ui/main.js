@@ -106,9 +106,6 @@ function check_used_activities() {
         new_selected_activities.add(select.options[select.selectedIndex].value);
     }
     selected_activities = new_selected_activities;
-    if (selected_activities.size !== activities.size) {
-        document.getElementById("add_action").disabled = false;
-    }
 }
 
 function get_activities() {
@@ -138,10 +135,14 @@ function set_max_time(i) {
     let time = document.getElementById(`action_value_${i}`);
     let current_value = parseInt(time.value)
     if (isNaN(current_value)) {
-        current_value = 0
+        current_value = 1
+        time.value = 1;
+        set_used_time();
     }
     console.log(current_value)
     time.setAttribute("max", `${available_time - used_time + current_value}`);
+    current_value = parseInt(time.value)
+    document.getElementById("add_action").disabled = false;
 }
 
 function get_available_time() {
