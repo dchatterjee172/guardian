@@ -1,4 +1,4 @@
-var api = "https://localhost:8080/"
+var api = "https://192.168.1.11:8080/"
 var activities = null
 var selected_activities = new Set()
 var available_time = null
@@ -136,12 +136,14 @@ function set_max_time(i) {
     let current_value = parseInt(time.value)
     if (isNaN(current_value)) {
         current_value = 1
-        time.value = 1;
-        set_used_time();
+        time.value = String(1);
     }
-    console.log(current_value)
-    time.setAttribute("max", `${available_time - used_time + current_value}`);
-    current_value = parseInt(time.value)
+    console.log(current_value, available_time, used_time)
+    set_used_time();
+    if (available_time - used_time < 0){
+        time.value = time.value.substring(0, time.value.length - 1)
+    }
+    set_used_time();
     document.getElementById("add_action").disabled = false;
 }
 
@@ -172,7 +174,7 @@ function remove_activity(i) {
 function add_action() {
     var field = document.getElementById("action_field");
     var id = Date.now();
-    field.insertAdjacentHTML('beforeend', `<select id="action_${id}" class="action_select" onfocus="set_activities_options(${id})" onblur="check_used_activities()"><option value="" selected disabled hidden>activities</option></select><input id="action_value_${id}" min="1" type="number" class="time_select" onchange="set_used_time()" onfocus="set_max_time(${id})" disabled onkeydown="return false"/><button id="action_remove_${id}" type="button" onclick="remove_action(${id})">remove the above action</button>`);
+    field.insertAdjacentHTML('beforeend', `<select id="action_${id}" class="action_select" onfocus="set_activities_options(${id})" onblur="check_used_activities()"><option value="" selected disabled hidden>activities</option></select><input id="action_value_${id}" min="1" type="number" class="time_select" onchange="set_max_time(${id})" onfocus="set_max_time(${id})" onkeyup="set_max_time(${id})"disabled/><button id="action_remove_${id}" type="button" onclick="remove_action(${id})">remove the above action</button>`);
     get_activities()
     document.getElementById("add_action").disabled = true;
 }
@@ -193,8 +195,8 @@ function send_actions() {
         "actions": payload
     }, (function x(x) {
         var field = document.getElementById("action_field");
-        var id = Date.now();
-        field.innerHTML = `<select id="action_${id}" class="action_select" onfocus="set_activities_options(${id})" onblur="check_used_activities()"><option value="" selected disabled hidden>activities</option></select><input id="action_value_${id}" min="1" type="number" class="time_select" onchange="set_used_time()" onfocus="set_max_time(${id})" disabled onkeydown="return false"/><button id="action_remove_${id}" type="button" onclick="remove_action(${id})">remove the above action</button>`
+        field.innerHTML = ""
+        add_action();
         get_activities()
         document.getElementById("add_action").disabled = true;
         get_available_time();
@@ -244,3 +246,12 @@ function body() {
     add_action();
     add_activity();
 }
+var down = false;
+document.addEventListener('keydown', function () {
+    if(down) return;
+    down = true;
+}, false);
+
+document.addEventListener('keyup', function () {
+    down = false;
+}, false);
