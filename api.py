@@ -108,6 +108,7 @@ def login(db):
 def logout():
     session = beaker_session()
     session.delete()
+    return {"success": True}
 
 
 @app.route("/api_get_activities")
@@ -163,8 +164,7 @@ def get_chart(db, userid):
     html = BeautifulSoup(html)
     body = html.body
     script = body.find("script")
-    response.content_type = "text/plain"
-    return script.contents[0]
+    return {"script": script.contents[0]}
 
 
 session_opts = {

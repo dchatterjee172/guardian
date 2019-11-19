@@ -229,24 +229,13 @@ function add_activity() {
 }
 
 function set_chart(chart) {
-    eval(chart);
+    eval(chart["script"]);
 }
 
 function get_chart() {
     var xhr = new XMLHttpRequest();
     var url = api + "api_get_chart";
-    xhr.open("GET", url, true);
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4) {
-            if (xhr.status === 200) {
-                var response = xhr.responseText
-                set_chart(response)
-            } else if (xhr.status == 401) {
-                window.location.href = "/login.html"
-            }
-        }
-    };
-    xhr.send();
+    get_json(url, set_chart);
 }
 
 function body() {
