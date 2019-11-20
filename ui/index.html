@@ -10,6 +10,14 @@
          color   : red;
          }
       }
+      /* 1em @ 48em (768px) increasing to 2em @ 120em (1920px) */
+      @media (min-width: 48rem) {
+        :root {
+          font-size           : calc(1rem + ((1vw - .48rem) * 1.389));
+           /* .48rem = viewportWidthMinimum /100 */
+           /* 1.389rem = 100 * fontSizeDifference / viewportWidthDifference */
+        }
+      }
     </style>
     <script src="https://cdn.jsdelivr.net/npm//vega@5" type="text/javascript">
     </script>
@@ -17,16 +25,6 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm//vega-embed@4" type="text/javascript">
     </script>
-    <style>
-      /* 1em @ 48em (768px) increasing to 2em @ 120em (1920px) */
-      @media (min-width: 48rem) {
-        :root {
-          font-size           : calc(1rem + ((1vw - .48rem) * 1.389));
-                                /* .48rem = viewportWidthMinimum /100 */
-                                /* 1.389rem = 100 * fontSizeDifference / viewportWidthDifference */
-        }
-      }
-    </style>
   </head>
   <body onload="body()">
     <fieldset>
