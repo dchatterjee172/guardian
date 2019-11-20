@@ -1,4 +1,4 @@
-from bottle import run, request, response, ServerAdapter, Bottle, abort
+from bottle import run, request, ServerAdapter, Bottle, abort
 from bottle.ext import sqlite
 from beaker.middleware import SessionMiddleware
 from cheroot import wsgi
