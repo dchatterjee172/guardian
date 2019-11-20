@@ -1,4 +1,4 @@
-var api = "https://192.168.1.11:8080/"
+var api = "/"
 var activities = null
 var selected_activities = new Set()
 var available_time = null
