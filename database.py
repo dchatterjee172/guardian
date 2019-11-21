@@ -1,4 +1,3 @@
-import sqlite3
 import bcrypt
 import pandas as pd
 
@@ -104,7 +103,7 @@ def db_last_action_time(db, userid):
         select timestamp
         from actions inner join activities
         on actions.activity_id = activities.id
-        where activities.user_id = ?
+        where activities.user_id = ? and date(timestamp) == date('now')
         order by timestamp desc
         limit 1
         """,
@@ -133,6 +132,14 @@ def db_get_action_current_day(db, userid):
 
 
 if __name__ == "__main__":
+    import sqlite3
+    from pathlib import Path
+    import sys
+
+    path = Path("./main.db")
+    if path.is_file():
+        print("db exists!")
+        sys.exit(0)
     conn = sqlite3.connect("main.db")
     c = conn.cursor()
     c.execute("PRAGMA foreign_keys = ON")
@@ -142,7 +149,8 @@ if __name__ == "__main__":
         (
         id integer primary key autoincrement not null,
         email text not null unique,
-        password text not null unique
+        password text not null unique,
+        check(length(email) < 100)
         )
         """
     )

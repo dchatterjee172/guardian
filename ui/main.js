@@ -113,9 +113,20 @@ function get_activities() {
     get_json(url, set_activities);
 }
 
+function hour_to_hm(min) {
+    hours = min / 60;
+    round_hours = Math.floor(hours);
+    minutes = (hours - round_hours) * 60;
+    round_minutes = Math.round(minutes);
+    if (round_hours > 0) {
+        return `${round_hours} hours and ${round_minutes} minutes`
+    }
+    return `${round_minutes} minutes`
+}
+
 function set_available_time(new_available_time) {
     available_time = new_available_time["minutes_ago"];
-    document.getElementById("time_available").innerHTML = `What have you done in past ${available_time} minutes?`
+    document.getElementById("time_available").innerHTML = `What have you done in past ${hour_to_hm(available_time)} minutes?`
     set_used_time();
 }
 
@@ -128,7 +139,7 @@ function set_used_time() {
         }
     }
     used_time = new_used_time
-    document.getElementById("time_used").innerHTML = `Added actions worth ${used_time} minutes! Remaining ${available_time - used_time} minutes.`
+    document.getElementById("time_used").innerHTML = `Added actions worth ${hour_to_hm(used_time)} minutes! Remaining ${hour_to_hm(available_time - used_time)}.`
 }
 
 function set_max_time(i) {
@@ -140,7 +151,7 @@ function set_max_time(i) {
     }
     console.log(current_value, available_time, used_time)
     set_used_time();
-    if (available_time - used_time < 0){
+    if (available_time - used_time < 0) {
         time.value = time.value.substring(0, time.value.length - 1)
     }
     set_used_time();
@@ -247,11 +258,11 @@ function body() {
     add_activity();
 }
 var down = false;
-document.addEventListener('keydown', function () {
-    if(down) return;
+document.addEventListener('keydown', function() {
+    if (down) return;
     down = true;
 }, false);
 
-document.addEventListener('keyup', function () {
+document.addEventListener('keyup', function() {
     down = false;
 }, false);

@@ -2,7 +2,6 @@ from bottle import run, request, ServerAdapter, Bottle, abort
 from bottle.ext import sqlite
 from beaker.middleware import SessionMiddleware
 from cheroot import wsgi
-import os
 from database import (
     db_register,
     db_login,
@@ -21,6 +20,7 @@ from datetime import datetime
 from dateutil import parser
 import pytz
 from bs4 import BeautifulSoup
+from secrets import token_hex
 
 app = Bottle()
 using_timezone = pytz.timezone("Asia/Calcutta")
@@ -175,7 +175,7 @@ session_opts = {
     "session.save_accessed_time": True,
     "session.secure": True,
     "session.timeout": 3000,
-    "session.secret": dict(os.environ)["SECRET"],
+    "session.secret": token_hex(20),
     "session.httponly": True,
 }
 
