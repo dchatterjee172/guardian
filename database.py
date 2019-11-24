@@ -3,7 +3,7 @@ import pandas as pd
 
 
 def db_register(db, email, password):
-    hashed = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode("utf-8")
+    hashed = bcrypt.hashpw(password.encode(), bcrypt.gensalt(rounds=20)).decode("utf-8")
     db.execute(
         """
         insert into user
