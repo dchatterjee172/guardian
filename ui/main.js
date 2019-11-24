@@ -4,6 +4,7 @@ var activities = null
 var selected_activities = new Set()
 var available_time = null
 var used_time = 0
+var action_submit_toggled_time = null
 
 
 function post_json(url, data, callback, do_async = true) {
@@ -195,6 +196,12 @@ function add_action() {
 }
 
 function send_actions() {
+    let elaspled = (new Date() - action_submit_toggled_time) / 1000 / 60
+    if (elaspled >= 1) {
+        toggle_action_field();
+        toggle_action_field();
+        return;
+    }
     if (available_time - used_time > 0) {
         alert("make sure remaining minutes is 0");
         return
@@ -263,6 +270,7 @@ function toggle_action_field() {
         button.classList.remove("hide")
         field.classList.add("hide")
     } else {
+        action_submit_toggled_time = new Date()
         get_activities();
         get_available_time();
         button.classList.add("hide")
