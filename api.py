@@ -1,5 +1,5 @@
 from bottle import run, request, ServerAdapter, Bottle, abort
-from bottle.ext import sqlite
+from bottle_sqlite import SQLitePlugin
 from beaker.middleware import SessionMiddleware
 from cheroot import wsgi
 from database import (
@@ -23,7 +23,7 @@ from bs4 import BeautifulSoup
 from secrets import token_hex
 
 app = Bottle()
-using_timezone = pytz.timezone("Asia/Calcutta")
+using_timezone = "Asia/Calcutta"
 
 
 class Unauthenticated_user(Exception):
@@ -139,15 +139,17 @@ def add_actions(db, userid):
 @app.route("/api_last_action_time")
 @login_required
 def last_action_time(db, userid):
-    timestamp_str = db_last_action_time(db, userid)
-    now = datetime.now(pytz.timezone("GMT"))
+    utc_offset = int(
+        datetime.now(pytz.timezone(using_timezone)).utcoffset().total_seconds() / 60
+    )
+
+    timestamp_str = db_last_action_time(db, userid, utc_offset)
+    now = datetime.now(pytz.timezone(using_timezone))
     if timestamp_str is None:
-        now = now.astimezone(using_timezone)
         delta = now - now.replace(hour=0, minute=0, second=0, microsecond=0)
     else:
         timestamp = parser.parse(timestamp_str, default=now)
-        now = now.astimezone(using_timezone)
-        delta = now - timestamp.astimezone(using_timezone)
+        delta = now - timestamp
     delta = delta.total_seconds() // 60
     return {"minutes_ago": int(delta)}
 
@@ -155,7 +157,10 @@ def last_action_time(db, userid):
 @app.route("/api_get_chart")
 @login_required
 def get_chart(db, userid):
-    df = db_get_action_current_day(db, userid)
+    utc_offset = int(
+        datetime.now(pytz.timezone(using_timezone)).utcoffset().total_seconds() / 60
+    )
+    df = db_get_action_current_day(db, userid, utc_offset)
     chart = alt.Chart(df).mark_bar().encode(x="activity", y="duration_minutes")
     html = StringIO()
     chart.save(html, "html")
@@ -180,7 +185,7 @@ session_opts = {
 }
 
 if __name__ == "__main__":
-    plugin = sqlite.Plugin(dbfile="main.db")
+    plugin = SQLitePlugin(dbfile="main.db")
     app.install(plugin)
     session_app = SessionMiddleware(app, session_opts)
     run(

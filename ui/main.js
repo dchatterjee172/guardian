@@ -1,17 +1,64 @@
-var api = "/"
+"use strict";
+const api = "/"
 var activities = null
 var selected_activities = new Set()
 var available_time = null
 var used_time = 0
 
+class State {
+    constructor() {
+        this.activities = null
+        this.selected_activities = new Set()
+        this.available_time = null
+        this.used_time = 0
+    }
+    update_activities() {
+        let url = api + "api_last_action_time";
+        this.activities = get_json(url, function(x) {
+            return new Set(x["activities"])
+        });
+    }
+    update_used_time() {
+        let times = document.getElementsByClassName("time_select")
+        let new_used_time = 0
+        let enable_add_action = true
+        for (let x of times) {
+            if (x.value !== "") {
+                new_used_time += parseInt(x.value)
+            } else {
+                enable_add_action = false
+            }
+        }
+        this.used_time = new_used_time
+    }
+    update_selected_activities() {
+        let new_selected_activities = new(Set)
+        let selects = document.getElementsByClassName("action_select")
+        for (let select of selects) {
+            option = select.options[select.selectedIndex].value
+            if (option !== "activities") {
+                select.disabled = true
+            }
+            new_selected_activities.add(select.options[select.selectedIndex].value);
+        }
+        this.selected_activities = new_selected_activities;
+    }
+    update_availabe_time() {
+        let url = api + "api_last_action_time";
+        this.available_time = get_json(url, function(x) {
+            return x["minutes_ago"]
+        });
+    }
+}
+
 function post_json(url, data, callback, do_async = true) {
-    var xhr = new XMLHttpRequest();
+    let xhr = new XMLHttpRequest();
     xhr.open("POST", url, do_async);
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
             if (xhr.status === 200) {
-                var response = JSON.parse(xhr.responseText);
+                let response = JSON.parse(xhr.responseText);
                 if (typeof callback !== "undefined") {
                     callback(response)
                 }
@@ -24,12 +71,12 @@ function post_json(url, data, callback, do_async = true) {
 }
 
 function get_json(url, callback, do_async = true) {
-    var xhr = new XMLHttpRequest();
+    let xhr = new XMLHttpRequest();
     xhr.open("GET", url, do_async);
     xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
             if (xhr.status === 200) {
-                var response = JSON.parse(xhr.responseText)
+                let response = JSON.parse(xhr.responseText)
                 if (typeof callback !== "undefined") {
                     callback(response)
                 }
@@ -50,9 +97,9 @@ function go_login() {
 }
 
 function register() {
-    var email = document.getElementById("email").value;
-    var password = document.getElementById("password").value;
-    var url = api + "api_register"
+    let email = document.getElementById("email").value;
+    let password = document.getElementById("password").value;
+    let url = api + "api_register"
     post_json(url, {
         "email": email,
         "password": password
@@ -60,9 +107,9 @@ function register() {
 }
 
 function login() {
-    var email = document.getElementById("email").value;
-    var password = document.getElementById("password").value;
-    var url = api + "api_login"
+    let email = document.getElementById("email").value;
+    let password = document.getElementById("password").value;
+    let url = api + "api_login"
     post_json(url, {
         "email": email,
         "password": password
@@ -75,8 +122,8 @@ function set_activities(new_activities) {
 
 
 function set_activities_options(i) {
-    select = document.getElementById(`action_${i}`);
-    selected_option = select.options[select.selectedIndex].value
+    let select = document.getElementById(`action_${i}`);
+    let selected_option = select.options[select.selectedIndex].value
     let difference = [...activities].filter(x => !selected_activities.has(x));
     difference.sort();
     let options = '';
@@ -96,10 +143,10 @@ function set_activities_options(i) {
 }
 
 function check_used_activities() {
-    var new_selected_activities = new(Set)
+    let new_selected_activities = new(Set)
     let selects = document.getElementsByClassName("action_select")
-    for (select of selects) {
-        option = select.options[select.selectedIndex].value
+    for (let select of selects) {
+        let option = select.options[select.selectedIndex].value
         if (option !== "activities") {
             select.disabled = true
         }
@@ -109,15 +156,15 @@ function check_used_activities() {
 }
 
 function get_activities() {
-    var url = api + "api_get_activities";
+    let url = api + "api_get_activities";
     get_json(url, set_activities);
 }
 
 function hour_to_hm(min) {
-    hours = min / 60;
-    round_hours = Math.floor(hours);
-    minutes = (hours - round_hours) * 60;
-    round_minutes = Math.round(minutes);
+    let hours = min / 60;
+    let round_hours = Math.floor(hours);
+    let minutes = (hours - round_hours) * 60;
+    let round_minutes = Math.round(minutes);
     if (round_hours > 0) {
         return `${round_hours} hours and ${round_minutes} minutes`
     }
@@ -132,22 +179,25 @@ function set_available_time(new_available_time) {
 
 function set_used_time() {
     let times = document.getElementsByClassName("time_select")
-    var new_used_time = 0
-    for (x of times) {
+    let new_used_time = 0
+    let enable_add_action = true
+    for (let x of times) {
         if (x.value !== "") {
             new_used_time += parseInt(x.value)
+        } else {
+            enable_add_action = false
         }
     }
     used_time = new_used_time
     document.getElementById("time_used").innerHTML = `Added actions worth ${hour_to_hm(used_time)} minutes! Remaining ${hour_to_hm(available_time - used_time)}.`
+    document.getElementById("add_action").disabled = !enable_add_action;
 }
 
 function set_max_time(i) {
     let time = document.getElementById(`action_value_${i}`);
     let current_value = parseInt(time.value)
     if (isNaN(current_value)) {
-        current_value = 1
-        time.value = String(1);
+        current_value = 0
     }
     console.log(current_value, available_time, used_time)
     set_used_time();
@@ -155,16 +205,15 @@ function set_max_time(i) {
         time.value = time.value.substring(0, time.value.length - 1)
     }
     set_used_time();
-    document.getElementById("add_action").disabled = false;
 }
 
 function get_available_time() {
-    var url = api + "api_last_action_time";
+    let url = api + "api_last_action_time";
     get_json(url, set_available_time);
 }
 
 function remove_action(i) {
-    var elem = document.getElementById(`action_${i}`);
+    let elem = document.getElementById(`action_${i}`);
     selected_activities.delete(elem.options[elem.selectedIndex].value);
     document.getElementById("add_action").disabled = false;
     elem.parentNode.removeChild(elem);
@@ -176,15 +225,15 @@ function remove_action(i) {
 }
 
 function remove_activity(i) {
-    var elem = document.getElementById(`activity_remove_${i}`);
+    let elem = document.getElementById(`activity_remove_${i}`);
     elem.parentNode.removeChild(elem);
     elem = document.getElementById(`activity_value_${i}`);
     elem.parentNode.removeChild(elem);
 }
 
 function add_action() {
-    var field = document.getElementById("action_field");
-    var id = Date.now();
+    let field = document.getElementById("action_field");
+    let id = Date.now();
     field.insertAdjacentHTML('beforeend', `<select id="action_${id}" class="action_select" onfocus="set_activities_options(${id})" onblur="check_used_activities()"><option value="" selected disabled hidden>activities</option></select><input id="action_value_${id}" min="1" type="number" class="time_select" onchange="set_max_time(${id})" onfocus="set_max_time(${id})" onkeyup="set_max_time(${id})"disabled/><button id="action_remove_${id}" type="button" onclick="remove_action(${id})">remove the above action</button>`);
     get_activities()
     document.getElementById("add_action").disabled = true;
@@ -195,9 +244,9 @@ function send_actions() {
         alert("make sure remaining minutes is 0");
         return
     }
-    selects = document.getElementsByClassName("action_select");
-    times = document.getElementsByClassName("time_select");
-    payload = {}
+    let selects = document.getElementsByClassName("action_select");
+    let times = document.getElementsByClassName("time_select");
+    let payload = {}
     for (let i = 0; i < selects.length; i++) {
         payload[selects[i].options[selects[i].selectedIndex].value] = parseInt(times[i].value);
     }
@@ -205,7 +254,7 @@ function send_actions() {
     post_json(url, {
         "actions": payload
     }, (function x(x) {
-        var field = document.getElementById("action_field");
+        let field = document.getElementById("action_field");
         field.innerHTML = ""
         add_action();
         get_activities()
@@ -215,9 +264,9 @@ function send_actions() {
 }
 
 function send_activities() {
-    activities = document.getElementsByClassName("activity_select");
-    payload = Array()
-    for (activity of activities) {
+    let activities = document.getElementsByClassName("activity_select");
+    let payload = Array()
+    for (let activity of activities) {
         console.log(payload)
         activity.value = activity.value.trim()
         if (activity.value.length > 0) {
@@ -257,12 +306,3 @@ function body() {
     add_action();
     add_activity();
 }
-var down = false;
-document.addEventListener('keydown', function() {
-    if (down) return;
-    down = true;
-}, false);
-
-document.addEventListener('keyup', function() {
-    down = false;
-}, false);
