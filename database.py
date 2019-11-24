@@ -98,7 +98,7 @@ def db_add_actions(db, userid, actions):
 
 
 def db_last_action_time(db, userid, utc_offset):
-    utc_offset = f"{utc_offset} miinutes"
+    utc_offset = f"{utc_offset} minutes"
     time = db.execute(
         """
         select timestamp
@@ -119,7 +119,7 @@ def db_last_action_time(db, userid, utc_offset):
 
 
 def db_get_action_current_day(db, userid, utc_offset):
-    utc_offset = f"{utc_offset} miinutes"
+    utc_offset = f"{utc_offset} minutes"
     query = """
                 select activity, sum(duration_minutes) as duration_minutes
                 from actions inner join activities
