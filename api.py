@@ -178,7 +178,7 @@ def get_chart(db, userid):
     del chart, df_groupby
     chart = alt.Chart(df)
     chart_duarion_certainty = (
-        chart.mark_circle(color="#202b38")
+        chart.mark_circle()
         .encode(
             x="certainty",
             y="duration_minutes",
