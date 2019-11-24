@@ -85,13 +85,14 @@ def db_add_actions(db, userid, actions):
         insert into actions
         (
         activity_id,
-        duration_minutes
+        duration_minutes,
+        actions_logged_together
         )
         values
-        (?, ?)
+        (?, ?, ?)
         """,
         (
-            (activities_id, duration_minutes)
+            (activities_id, duration_minutes, len(actions))
             for activities_id, duration_minutes in zip(activities_ids, actions.values())
         ),
     )
@@ -177,6 +178,7 @@ if __name__ == "__main__":
         duration_minutes int not null,
         timestamp datetime default current_timestamp,
         activity_id int not null,
+        actions_logged_together int not null,
         foreign key(activity_id) references
             activities(id),
         check(duration_minutes > 0)

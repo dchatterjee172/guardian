@@ -35,7 +35,7 @@ class State {
         let new_selected_activities = new(Set)
         let selects = document.getElementsByClassName("action_select")
         for (let select of selects) {
-            option = select.options[select.selectedIndex].value
+            let option = select.options[select.selectedIndex].value
             if (option !== "activities") {
                 select.disabled = true
             }
