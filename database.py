@@ -67,7 +67,7 @@ def db_add_activities(db, userid, activities):
     )
 
 
-def db_add_actions(db, userid, actions, actions_logged_together):
+def db_add_actions(db, userid, actions):
     cursor = db.cursor()
     activities_ids = []
     for activity in actions.keys():
@@ -92,7 +92,7 @@ def db_add_actions(db, userid, actions, actions_logged_together):
         (?, ?, ?)
         """,
         (
-            (activities_id, duration_minutes, actions_logged_together)
+            (activities_id, duration_minutes, len(actions))
             for activities_id, duration_minutes in zip(activities_ids, actions.values())
         ),
     )
