@@ -102,7 +102,7 @@ def login(db):
         session["userid"] = userid
         return {"success": True}
     else:
-        abort(400, "get out!")
+        abort(401, "get out!")
 
 
 @app.route("/api_logout")
