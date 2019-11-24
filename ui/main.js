@@ -209,6 +209,7 @@ function send_actions() {
     post_json(url, {
         "actions": payload
     }, (function x(x) {
+        toggle_action_field()
         let field = document.getElementById("action_field");
         field.innerHTML = ""
         add_action();
@@ -255,9 +256,21 @@ function get_chart() {
     get_json(url, set_chart);
 }
 
+function toggle_action_field() {
+    let button = document.getElementById("toggle_action_submit_field");
+    let field = document.getElementById("action_submit_field");
+    if (button.classList.contains("hide")) {
+        button.classList.remove("hide")
+        field.classList.add("hide")
+    } else {
+        get_activities();
+        get_available_time();
+        button.classList.add("hide")
+        field.classList.remove("hide")
+    }
+}
+
 function body() {
-    get_activities();
-    get_available_time();
     add_action();
     add_activity();
 }

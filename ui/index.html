@@ -15,6 +15,9 @@
           font-size           : calc(1rem + ((1vw - .48rem) * 1.389));
         }
       }
+      .hide {
+        display             : none;
+      }
     </style>
     <script src="https://cdn.jsdelivr.net/npm//vega@5" type="text/javascript">
     </script>
@@ -24,7 +27,10 @@
     </script>
   </head>
   <body onload="body()">
-    <fieldset>
+    <button id="toggle_action_submit_field" onclick="toggle_action_field()">
+      Log Action
+    </button>
+    <fieldset class="hide" id="action_submit_field">
       <legend>
         Enter Action
       </legend>
