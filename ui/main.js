@@ -5,51 +5,6 @@ var selected_activities = new Set()
 var available_time = null
 var used_time = 0
 
-class State {
-    constructor() {
-        this.activities = null
-        this.selected_activities = new Set()
-        this.available_time = null
-        this.used_time = 0
-    }
-    update_activities() {
-        let url = api + "api_last_action_time";
-        this.activities = get_json(url, function(x) {
-            return new Set(x["activities"])
-        });
-    }
-    update_used_time() {
-        let times = document.getElementsByClassName("time_select")
-        let new_used_time = 0
-        let enable_add_action = true
-        for (let x of times) {
-            if (x.value !== "") {
-                new_used_time += parseInt(x.value)
-            } else {
-                enable_add_action = false
-            }
-        }
-        this.used_time = new_used_time
-    }
-    update_selected_activities() {
-        let new_selected_activities = new(Set)
-        let selects = document.getElementsByClassName("action_select")
-        for (let select of selects) {
-            let option = select.options[select.selectedIndex].value
-            if (option !== "activities") {
-                select.disabled = true
-            }
-            new_selected_activities.add(select.options[select.selectedIndex].value);
-        }
-        this.selected_activities = new_selected_activities;
-    }
-    update_availabe_time() {
-        let url = api + "api_last_action_time";
-        this.available_time = get_json(url, function(x) {
-            return x["minutes_ago"]
-        });
-    }
-}
 
 function post_json(url, data, callback, do_async = true) {
     let xhr = new XMLHttpRequest();
