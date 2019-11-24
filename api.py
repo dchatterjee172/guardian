@@ -161,14 +161,35 @@ def get_chart(db, userid):
     utc_offset = int(
         datetime.now(pytz.timezone(using_timezone)).utcoffset().total_seconds() / 60
     )
-    df = db_get_action_current_day(db, userid, utc_offset)
+    df, df_groupby = db_get_action_current_day(db, userid, utc_offset)
     df["certainty"] = df["certainty"].apply(lambda x: exp(1 - x))
-    chart = alt.Chart(df)
+    df_groupby["certainty"] = df_groupby["certainty"].apply(lambda x: exp(1 - x))
+    chart = alt.Chart(df_groupby)
     chart_activity_duarions = (
-        chart.mark_bar().encode(x="activity", y="duration_minutes").interactive()
+        chart.mark_bar(color="#202b38")
+        .encode(x="activity", y="duration_minutes")
+        .interactive()
     )
-    chart_certainty = chart.mark_bar().encode(x="activity", y="certainty").interactive()
-    charts = alt.vconcat(chart_activity_duarions, chart_certainty)
+    chart_certainty = (
+        chart.mark_bar(color="#202b38")
+        .encode(x="activity", y="certainty")
+        .interactive()
+    )
+    del chart, df_groupby
+    chart = alt.Chart(df)
+    chart_duarion_certainty = (
+        chart.mark_circle(color="#202b38")
+        .encode(
+            x="certainty",
+            y="duration_minutes",
+            color="activity",
+            tooltip=("activity", "certainty", "duration_minutes"),
+        )
+        .interactive()
+    )
+    charts = alt.vconcat(
+        chart_activity_duarions, chart_certainty, chart_duarion_certainty
+    ).configure(background="white")
     html = StringIO()
     charts.save(html, "html")
     html.seek(0)

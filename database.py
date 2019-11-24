@@ -133,8 +133,18 @@ def db_get_action_current_day(db, userid, utc_offset):
                 date(timestamp, ?) == date('now', ?)
                 group by activity;
             """
+    df_groupby = pd.read_sql_query(query, db, params=(userid, utc_offset, utc_offset))
+    query = """
+                select activity, duration_minutes, actions_logged_together as certainty
+                from actions inner join activities
+                on actions.activity_id = activities.id
+                where
+                activities.user_id = ?
+                and
+                date(timestamp, ?) == date('now', ?)
+            """
     df = pd.read_sql_query(query, db, params=(userid, utc_offset, utc_offset))
-    return df
+    return df, df_groupby
 
 
 if __name__ == "__main__":
