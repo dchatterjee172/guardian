@@ -161,7 +161,12 @@ def get_chart(db, userid):
         datetime.now(pytz.timezone(using_timezone)).utcoffset().total_seconds() / 60
     )
     df = db_get_action_current_day(db, userid, utc_offset)
-    chart = alt.Chart(df).mark_bar().encode(x="activity", y="duration_minutes")
+    chart = (
+        alt.Chart(df)
+        .mark_bar()
+        .encode(x="activity", y="duration_minutes")
+        .interactive()
+    )
     html = StringIO()
     chart.save(html, "html")
     html.seek(0)
