@@ -167,12 +167,12 @@ def get_chart(db, userid):
     chart = alt.Chart(df_groupby)
     chart_activity_duarions = (
         chart.mark_bar(color="#202b38")
-        .encode(x="activity", y="duration_minutes")
+        .encode(y="activity", x="duration_minutes")
         .interactive()
     )
     chart_certainty = (
         chart.mark_bar(color="#202b38")
-        .encode(x="activity", y="certainty")
+        .encode(y="activity", x="certainty")
         .interactive()
     )
     del chart, df_groupby
