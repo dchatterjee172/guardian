@@ -122,7 +122,9 @@ def db_last_action_time(db, userid, utc_offset):
 def db_get_action_current_day(db, userid, utc_offset):
     utc_offset = f"{utc_offset} minutes"
     query = """
-                select activity, sum(duration_minutes) as duration_minutes
+                select activity,
+                sum(duration_minutes) as duration_minutes,
+                avg(actions_logged_together) as certainty
                 from actions inner join activities
                 on actions.activity_id = activities.id
                 where

@@ -21,6 +21,7 @@ from dateutil import parser
 import pytz
 from bs4 import BeautifulSoup
 from secrets import token_hex
+from numpy import exp
 
 app = Bottle()
 using_timezone = "Asia/Calcutta"
@@ -161,14 +162,15 @@ def get_chart(db, userid):
         datetime.now(pytz.timezone(using_timezone)).utcoffset().total_seconds() / 60
     )
     df = db_get_action_current_day(db, userid, utc_offset)
-    chart = (
-        alt.Chart(df)
-        .mark_bar()
-        .encode(x="activity", y="duration_minutes")
-        .interactive()
+    df["certainty"] = df["certainty"].apply(lambda x: exp(1 - x))
+    chart = alt.Chart(df)
+    chart_activity_duarions = (
+        chart.mark_bar().encode(x="activity", y="duration_minutes").interactive()
     )
+    chart_certainty = chart.mark_bar().encode(x="activity", y="certainty").interactive()
+    charts = alt.vconcat(chart_activity_duarions, chart_certainty)
     html = StringIO()
-    chart.save(html, "html")
+    charts.save(html, "html")
     html.seek(0)
     html = html.read()
     html = BeautifulSoup(html)
