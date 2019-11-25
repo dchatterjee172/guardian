@@ -216,9 +216,9 @@ def get_chart(db, userid):
     del chart, df_groupby
     charts = alt.vconcat(
         chart_activity_duarions,
+        chart_time_series,
         chart_certainty,
         chart_duarion_certainty,
-        chart_time_series,
     ).configure(background="white")
     html = StringIO()
     charts.save(html, "html")
