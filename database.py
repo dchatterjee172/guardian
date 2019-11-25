@@ -8,7 +8,7 @@ def db_register(db, email, password):
         """
         insert into user
         (
-        email,
+        lower(email),
         password
         )
         values
@@ -22,7 +22,7 @@ def db_login(db, email, password):
     userid, truth = db.execute(
         """
         select id, password from user
-        where email = ?
+        where email = lower(?)
         """,
         (email,),
     ).fetchone()
@@ -61,7 +61,7 @@ def db_add_activities(db, userid, activities):
         activity
         )
         values
-        (?, ?)
+        (?, lower(?))
         """,
         ((userid, activity) for activity in activities),
     )
@@ -75,7 +75,7 @@ def db_add_actions(db, userid, actions):
             cursor.execute(
                 """
             select id from activities
-            where activity=? and user_id=?
+            where activity=lower(?) and user_id=?
             """,
                 (activity, userid),
             ).fetchone()[0]
