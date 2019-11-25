@@ -216,13 +216,12 @@ function send_actions() {
     post_json(url, {
         "actions": payload
     }, (function x(x) {
-        toggle_action_field()
+        toggle_action_field();
+        selected_activities = new Set();
         let field = document.getElementById("action_field");
         field.innerHTML = ""
         add_action();
-        get_activities()
         document.getElementById("add_action").disabled = true;
-        get_available_time();
     }));
 }
 
