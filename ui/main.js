@@ -130,6 +130,7 @@ function hour_to_hm(min) {
 function set_available_time(new_available_time) {
     available_time = new_available_time["minutes_ago"];
     document.getElementById("time_available").innerHTML = `What have you done in past ${hour_to_hm(available_time)} minutes?`
+    document.getElementById("action_submit_field").disabled=false;
     set_used_time();
 }
 
@@ -270,6 +271,7 @@ function toggle_action_field() {
         field.classList.add("hide")
     } else {
         action_submit_toggled_time = new Date()
+        field.disabled = true;
         get_activities();
         get_available_time();
         button.classList.add("hide")
