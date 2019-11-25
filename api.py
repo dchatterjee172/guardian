@@ -25,6 +25,7 @@ from numpy import exp
 
 app = Bottle()
 using_timezone = "Asia/Calcutta"
+chart_minute_scale_base = 2
 
 
 class Unauthenticated_user(Exception):
@@ -167,7 +168,13 @@ def get_chart(db, userid):
     chart = alt.Chart(df_groupby)
     chart_activity_duarions = (
         chart.mark_bar(color="#202b38")
-        .encode(y="activity", x="duration_minutes")
+        .encode(
+            y="activity",
+            x=alt.X(
+                "duration_minutes",
+                scale=alt.Scale(type="log", base=chart_minute_scale_base),
+            ),
+        )
         .interactive()
     )
     chart_certainty = (
@@ -181,7 +188,10 @@ def get_chart(db, userid):
         chart.mark_circle()
         .encode(
             x="certainty",
-            y="duration_minutes",
+            y=alt.Y(
+                "duration_minutes",
+                scale=alt.Scale(type="log", base=chart_minute_scale_base),
+            ),
             color="activity",
             tooltip=("activity", "certainty", "duration_minutes"),
         )
