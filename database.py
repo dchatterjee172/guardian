@@ -119,8 +119,9 @@ def db_last_action_time(db, userid, utc_offset):
     return time
 
 
-def db_get_action_current_day(db, userid, utc_offset):
+def db_get_action_past_days(db, userid, utc_offset, days=0):
     utc_offset = f"{utc_offset} minutes"
+    days = f"-{days} day"
     query = """
                 select activity,
                 sum(duration_minutes) as duration_minutes,
@@ -130,10 +131,12 @@ def db_get_action_current_day(db, userid, utc_offset):
                 where
                 activities.user_id = ?
                 and
-                date(timestamp, ?) == date('now', ?)
+                date(timestamp, ?) >= date(date('now', ?), ?)
                 group by activity;
             """
-    df_groupby = pd.read_sql_query(query, db, params=(userid, utc_offset, utc_offset))
+    df_groupby = pd.read_sql_query(
+        query, db, params=(userid, utc_offset, utc_offset, days)
+    )
     query = """
                 select activity, duration_minutes, actions_logged_together as certainty
                 from actions inner join activities
@@ -141,9 +144,9 @@ def db_get_action_current_day(db, userid, utc_offset):
                 where
                 activities.user_id = ?
                 and
-                date(timestamp, ?) == date('now', ?)
+                date(timestamp, ?) >= date(date('now', ?), ?)
             """
-    df = pd.read_sql_query(query, db, params=(userid, utc_offset, utc_offset))
+    df = pd.read_sql_query(query, db, params=(userid, utc_offset, utc_offset, days))
     return df, df_groupby
 
 

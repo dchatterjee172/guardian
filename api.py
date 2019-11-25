@@ -9,7 +9,7 @@ from database import (
     db_add_activities,
     db_add_actions,
     db_last_action_time,
-    db_get_action_current_day,
+    db_get_action_past_days,
 )
 from sqlite3 import IntegrityError
 from inspect import getargspec
@@ -162,7 +162,7 @@ def get_chart(db, userid):
     utc_offset = int(
         datetime.now(pytz.timezone(using_timezone)).utcoffset().total_seconds() / 60
     )
-    df, df_groupby = db_get_action_current_day(db, userid, utc_offset)
+    df, df_groupby = db_get_action_past_days(db, userid, utc_offset)
     df["certainty"] = df["certainty"].apply(lambda x: exp(1 - x))
     df_groupby["certainty"] = df_groupby["certainty"].apply(lambda x: exp(1 - x))
     chart = alt.Chart(df_groupby)
