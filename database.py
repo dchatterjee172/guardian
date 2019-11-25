@@ -8,7 +8,7 @@ def db_register(db, email, password):
         """
         insert into user
         (
-        email,
+        lower(email),
         password
         )
         values
@@ -22,7 +22,7 @@ def db_login(db, email, password):
     userid, truth = db.execute(
         """
         select id, password from user
-        where email = ?
+        where email = lower(?)
         """,
         (email,),
     ).fetchone()
@@ -61,7 +61,7 @@ def db_add_activities(db, userid, activities):
         activity
         )
         values
-        (?, ?)
+        (?, lower(?))
         """,
         ((userid, activity) for activity in activities),
     )
@@ -75,7 +75,7 @@ def db_add_actions(db, userid, actions):
             cursor.execute(
                 """
             select id from activities
-            where activity=? and user_id=?
+            where activity=lower(?) and user_id=?
             """,
                 (activity, userid),
             ).fetchone()[0]
@@ -119,22 +119,40 @@ def db_last_action_time(db, userid, utc_offset):
     return time
 
 
-def db_get_action_current_day(db, userid, utc_offset):
+def db_get_action_time_past_days(db, userid, utc_offset, days=0):
     utc_offset = f"{utc_offset} minutes"
+    days = f"-{days} day"
     query = """
                 select activity,
                 sum(duration_minutes) as duration_minutes,
-                avg(actions_logged_together) as certainty
+                avg(actions_logged_together) as certainty,
+                date(timestamp, ?) as day
                 from actions inner join activities
                 on actions.activity_id = activities.id
                 where
                 activities.user_id = ?
                 and
-                date(timestamp, ?) == date('now', ?)
-                group by activity;
+                date(timestamp, ?) >= date(date('now', ?), ?)
+                group by day, activity;
             """
-    df = pd.read_sql_query(query, db, params=(userid, utc_offset, utc_offset))
-    return df
+    df_groupby = pd.read_sql_query(
+        query, db, params=(utc_offset, userid, utc_offset, utc_offset, days)
+    )
+    query = """
+                select
+                activity, duration_minutes,
+                actions_logged_together as certainty, date(timestamp, ?) as day
+                from actions inner join activities
+                on actions.activity_id = activities.id
+                where
+                activities.user_id = ?
+                and
+                day >= date(date('now', ?), ?)
+            """
+    df = pd.read_sql_query(
+        query, db, params=(utc_offset, userid, utc_offset, utc_offset)
+    )
+    return df, df_groupby
 
 
 if __name__ == "__main__":

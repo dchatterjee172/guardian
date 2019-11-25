@@ -4,52 +4,8 @@ var activities = null
 var selected_activities = new Set()
 var available_time = null
 var used_time = 0
+var action_submit_toggled_time = null
 
-class State {
-    constructor() {
-        this.activities = null
-        this.selected_activities = new Set()
-        this.available_time = null
-        this.used_time = 0
-    }
-    update_activities() {
-        let url = api + "api_last_action_time";
-        this.activities = get_json(url, function(x) {
-            return new Set(x["activities"])
-        });
-    }
-    update_used_time() {
-        let times = document.getElementsByClassName("time_select")
-        let new_used_time = 0
-        let enable_add_action = true
-        for (let x of times) {
-            if (x.value !== "") {
-                new_used_time += parseInt(x.value)
-            } else {
-                enable_add_action = false
-            }
-        }
-        this.used_time = new_used_time
-    }
-    update_selected_activities() {
-        let new_selected_activities = new(Set)
-        let selects = document.getElementsByClassName("action_select")
-        for (let select of selects) {
-            let option = select.options[select.selectedIndex].value
-            if (option !== "activities") {
-                select.disabled = true
-            }
-            new_selected_activities.add(select.options[select.selectedIndex].value);
-        }
-        this.selected_activities = new_selected_activities;
-    }
-    update_availabe_time() {
-        let url = api + "api_last_action_time";
-        this.available_time = get_json(url, function(x) {
-            return x["minutes_ago"]
-        });
-    }
-}
 
 function post_json(url, data, callback, do_async = true) {
     let xhr = new XMLHttpRequest();
@@ -174,6 +130,7 @@ function hour_to_hm(min) {
 function set_available_time(new_available_time) {
     available_time = new_available_time["minutes_ago"];
     document.getElementById("time_available").innerHTML = `What have you done in past ${hour_to_hm(available_time)} minutes?`
+    document.getElementById("action_submit_field").disabled=false;
     set_used_time();
 }
 
@@ -240,6 +197,12 @@ function add_action() {
 }
 
 function send_actions() {
+    let elaspled = (new Date() - action_submit_toggled_time) / 1000 / 60
+    if (elaspled >= 1) {
+        toggle_action_field();
+        toggle_action_field();
+        return;
+    }
     if (available_time - used_time > 0) {
         alert("make sure remaining minutes is 0");
         return
@@ -254,12 +217,12 @@ function send_actions() {
     post_json(url, {
         "actions": payload
     }, (function x(x) {
+        toggle_action_field();
+        selected_activities = new Set();
         let field = document.getElementById("action_field");
         field.innerHTML = ""
         add_action();
-        get_activities()
         document.getElementById("add_action").disabled = true;
-        get_available_time();
     }));
 }
 
@@ -300,9 +263,23 @@ function get_chart() {
     get_json(url, set_chart);
 }
 
+function toggle_action_field() {
+    let button = document.getElementById("toggle_action_submit_field");
+    let field = document.getElementById("action_submit_field");
+    if (button.classList.contains("hide")) {
+        button.classList.remove("hide")
+        field.classList.add("hide")
+    } else {
+        action_submit_toggled_time = new Date()
+        field.disabled = true;
+        get_activities();
+        get_available_time();
+        button.classList.add("hide")
+        field.classList.remove("hide")
+    }
+}
+
 function body() {
-    get_activities();
-    get_available_time();
     add_action();
     add_activity();
 }

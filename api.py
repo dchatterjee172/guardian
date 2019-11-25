@@ -9,7 +9,7 @@ from database import (
     db_add_activities,
     db_add_actions,
     db_last_action_time,
-    db_get_action_current_day,
+    db_get_action_time_past_days,
 )
 from sqlite3 import IntegrityError
 from inspect import getargspec
@@ -25,6 +25,7 @@ from numpy import exp
 
 app = Bottle()
 using_timezone = "Asia/Calcutta"
+chart_minute_scale_base = 2
 
 
 class Unauthenticated_user(Exception):
@@ -102,7 +103,7 @@ def login(db):
         session["userid"] = userid
         return {"success": True}
     else:
-        abort(400, "get out!")
+        abort(401, "get out!")
 
 
 @app.route("/api_logout")
@@ -158,17 +159,67 @@ def last_action_time(db, userid):
 @app.route("/api_get_chart")
 @login_required
 def get_chart(db, userid):
+    today = str(datetime.date(datetime.now(pytz.timezone("Asia/Calcutta"))))
     utc_offset = int(
         datetime.now(pytz.timezone(using_timezone)).utcoffset().total_seconds() / 60
     )
-    df = db_get_action_current_day(db, userid, utc_offset)
+    df, df_groupby = db_get_action_time_past_days(db, userid, utc_offset, days=7)
     df["certainty"] = df["certainty"].apply(lambda x: exp(1 - x))
-    chart = alt.Chart(df)
+    df_groupby["certainty"] = df_groupby["certainty"].apply(lambda x: exp(1 - x))
+    chart = alt.Chart(df_groupby[df_groupby["day"] == today])
     chart_activity_duarions = (
-        chart.mark_bar().encode(x="activity", y="duration_minutes").interactive()
+        chart.mark_bar(color="#202b38")
+        .encode(
+            y="activity",
+            x=alt.X(
+                "duration_minutes",
+                scale=alt.Scale(type="log", base=chart_minute_scale_base),
+            ),
+        )
+        .interactive()
     )
-    chart_certainty = chart.mark_bar().encode(x="activity", y="certainty").interactive()
-    charts = alt.vconcat(chart_activity_duarions, chart_certainty)
+    chart_certainty = (
+        chart.mark_bar(color="#202b38")
+        .encode(y="activity", x="certainty")
+        .interactive()
+    )
+    del chart
+    chart = alt.Chart(df[df["day"] == today])
+    chart_duarion_certainty = (
+        chart.mark_circle()
+        .encode(
+            x="certainty",
+            y=alt.Y(
+                "duration_minutes",
+                scale=alt.Scale(type="log", base=chart_minute_scale_base),
+            ),
+            color="activity",
+            tooltip=("activity", "certainty", "duration_minutes"),
+        )
+        .interactive()
+    )
+    del chart
+    chart = alt.Chart(df_groupby)
+    chart_time_series = (
+        chart.mark_line(point=True)
+        .encode(
+            y=alt.Y(
+                "duration_minutes",
+                scale=alt.Scale(type="log", base=chart_minute_scale_base),
+            ),
+            x="day",
+            color="activity",
+            tooltip=("activity", "duration_minutes", "day"),
+        )
+        .interactive()
+    )
+    del chart, df_groupby
+    charts = alt.vconcat(
+        chart_activity_duarions,
+        chart_time_series,
+        chart_certainty,
+        chart_duarion_certainty,
+    ).configure(background="white")
     html = StringIO()
     charts.save(html, "html")
     html.seek(0)
