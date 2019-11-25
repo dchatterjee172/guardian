@@ -9,7 +9,6 @@ from database import (
     db_add_activities,
     db_add_actions,
     db_last_action_time,
-    db_get_action_past_days,
     db_get_action_time_past_days,
 )
 from sqlite3 import IntegrityError
@@ -160,13 +159,14 @@ def last_action_time(db, userid):
 @app.route("/api_get_chart")
 @login_required
 def get_chart(db, userid):
+    today = str(datetime.date(datetime.now(pytz.timezone("Asia/Calcutta"))))
     utc_offset = int(
         datetime.now(pytz.timezone(using_timezone)).utcoffset().total_seconds() / 60
     )
-    df, df_groupby = db_get_action_past_days(db, userid, utc_offset)
+    df, df_groupby = db_get_action_time_past_days(db, userid, utc_offset, days=7)
     df["certainty"] = df["certainty"].apply(lambda x: exp(1 - x))
     df_groupby["certainty"] = df_groupby["certainty"].apply(lambda x: exp(1 - x))
-    chart = alt.Chart(df_groupby)
+    chart = alt.Chart(df_groupby[df_groupby["day"] == today])
     chart_activity_duarions = (
         chart.mark_bar(color="#202b38")
         .encode(
@@ -183,8 +183,8 @@ def get_chart(db, userid):
         .encode(y="activity", x="certainty")
         .interactive()
     )
-    del chart, df_groupby
-    chart = alt.Chart(df)
+    del chart
+    chart = alt.Chart(df[df["day"] == today])
     chart_duarion_certainty = (
         chart.mark_circle()
         .encode(
@@ -198,9 +198,7 @@ def get_chart(db, userid):
         )
         .interactive()
     )
-    del chart, df
-    # NOTE: pandas or sqlite for all these group by?
-    df_groupby = db_get_action_time_past_days(db, userid, utc_offset, days=7)
+    del chart
     chart = alt.Chart(df_groupby)
     chart_time_series = (
         chart.mark_line(point=True)
