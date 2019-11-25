@@ -150,6 +150,27 @@ def db_get_action_past_days(db, userid, utc_offset, days=0):
     return df, df_groupby
 
 
+def db_get_action_time_past_days(db, userid, utc_offset, days=0):
+    utc_offset = f"{utc_offset} minutes"
+    days = f"-{days} day"
+    query = """
+                select activity,
+                sum(duration_minutes) as duration_minutes,
+                date(timestamp, ?) as day
+                from actions inner join activities
+                on actions.activity_id = activities.id
+                where
+                activities.user_id = ?
+                and
+                date(timestamp, ?) >= date(date('now', ?), ?)
+                group by day, activity;
+            """
+    df_groupby = pd.read_sql_query(
+        query, db, params=(utc_offset, userid, utc_offset, utc_offset, days)
+    )
+    return df_groupby
+
+
 if __name__ == "__main__":
     import sqlite3
     from pathlib import Path

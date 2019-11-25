@@ -10,6 +10,7 @@ from database import (
     db_add_actions,
     db_last_action_time,
     db_get_action_past_days,
+    db_get_action_time_past_days,
 )
 from sqlite3 import IntegrityError
 from inspect import getargspec
@@ -197,8 +198,29 @@ def get_chart(db, userid):
         )
         .interactive()
     )
+    del chart, df
+    # NOTE: pandas or sqlite for all these group by?
+    df_groupby = db_get_action_time_past_days(db, userid, utc_offset, days=7)
+    chart = alt.Chart(df_groupby)
+    chart_time_series = (
+        chart.mark_line(point=True)
+        .encode(
+            y=alt.Y(
+                "duration_minutes",
+                scale=alt.Scale(type="log", base=chart_minute_scale_base),
+            ),
+            x="day",
+            color="activity",
+            tooltip=("activity", "duration_minutes", "day"),
+        )
+        .interactive()
+    )
+    del chart, df_groupby
     charts = alt.vconcat(
-        chart_activity_duarions, chart_certainty, chart_duarion_certainty
+        chart_activity_duarions,
+        chart_certainty,
+        chart_duarion_certainty,
+        chart_time_series,
     ).configure(background="white")
     html = StringIO()
     charts.save(html, "html")
