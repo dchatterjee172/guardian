@@ -146,7 +146,7 @@ function set_used_time() {
         }
     }
     used_time = new_used_time
-    document.getElementById("time_used").innerHTML = `Added actions worth ${hour_to_hm(used_time)} minutes! Remaining ${hour_to_hm(available_time - used_time)}.`
+    document.getElementById("time_used").innerHTML = `Added actions worth ${hour_to_hm(used_time)}! Remaining ${hour_to_hm(available_time - used_time)}.`
     document.getElementById("add_action").disabled = !enable_add_action;
 }
 
@@ -242,14 +242,14 @@ function send_activities() {
     }, (function x(x) {
         var field = document.getElementById("activity_field");
         var id = Date.now();
-        field.innerHTML = `<input id="activity_value_${id}" type="text" class="activity_select"/><button id="activity_remove_${id}" type="button" onclick="remove_activity(${id})">remove the above activity</button>`
+        field.innerHTML = `<input id="activity_value_${id}" type="text" class="activity_select"/><button id="activity_remove_${id}" type="button" onclick="remove_activity(${id})">Remove the above Activity</button>`
     }));
 }
 
 function add_activity() {
     var field = document.getElementById("activity_field");
     var id = Date.now();
-    field.insertAdjacentHTML('beforeend', `<input id="activity_value_${id}" type="text" class="activity_select"/><button id="activity_remove_${id}" type="button" onclick="remove_activity(${id})">remove the above activity</button>`);
+    field.insertAdjacentHTML('beforeend', `<input id="activity_value_${id}" type="text" class="activity_select"/><button id="activity_remove_${id}" type="button" onclick="remove_activity(${id})">Remove the above Activity</button>`);
 
 }
 
